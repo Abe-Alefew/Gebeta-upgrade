@@ -4,7 +4,7 @@ import Footer from './components/footer/footer';
 
 // Import pages
 import Home from './pages/Home/Home';
-import About from './pages/About/About';
+import About from './pages/About/about';
 import Delivery from './pages/Delivery/Delivery';
 import Reviews from './pages/Reviews/Reviews';
 import CustomerReview from './pages/CustomerReview/CustomerReview';
