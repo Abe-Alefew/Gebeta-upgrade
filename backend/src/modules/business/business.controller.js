@@ -1,0 +1,155 @@
+import Business from "../../models/Business.js";
+import { parseBody } from "../../utils/parseBody.js";
+import mongoose from "mongoose";
+//@desc get all businesses with search and category filter
+//@route GET
+export const getAll = async (req, res) => {
+  try {
+    //parse the url and get the query parameter
+    const url = new URL(req.url, `http://${req.headers.host}`);
+
+    //paginate
+    const page = parseInt(url.searchParams.get("page")) || 1;
+    const limit = parseInt(url.searchParams.get("limit")) || 10;
+    const skip = (page - 1) * limit;
+
+    //filter and search
+    const category = url.searchParams.get("category");
+    const search = url.searchParams.get("search");
+    const sort = url.searchParams.get("sort"); //rating, or newest or name
+
+    let query = {};
+    if (category) query.category = category;
+    if (search) query.name = { $regex: search, $options: "i" };
+
+    //sort based on the query
+    let sortOption = {};
+    if (sort === "rating") sortOption = { "rating.average": -1 };
+    else if (sort === "newest") sortOption = { createdAt: -1 };
+    else if (sort === "name") sortOption = { name: 1 };
+
+    //find from the database, pagenate and limit
+    const businesses = await Business.find(query)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit);
+
+    //total count for Ui pagenation
+    const total = await Business.countDocuments(query);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        data: businesses,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      })
+    );
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: err.message }));
+  }
+};
+
+//@desc 2. get businesses by id
+//@route GET
+export const getById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Invalid ID format" }));
+    }
+    // .populate('reviews') can be added later once reviews are built
+    const business = await Business.findById(id);
+
+    if (!business) {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ message: "Not Found" }));
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(business));
+  } catch (err) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid ID" }));
+  }
+};
+
+//@desc 3. get featured businesses
+//@route
+export const getFeatured = async (req, res) => {
+  try {
+    //so featured section for those with the highes ratings
+    const featured = await Business.find({ isFeatured: true })
+      .sort({ "rating.average": -1 })
+      .limit(3);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(featured));
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Failed to fetch featured" }));
+  }
+};
+
+//@desc 4. get by category
+//@route
+export const getByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const businesses = await Business.find({ category });
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(businesses));
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Categrory fetch failed" }));
+  }
+};
+//@desc create a business list
+//@route
+export const create = async (req, res) => {
+  try {
+    const data = await parseBody(req);
+    const doc = await Business.create(data);
+
+    res.writeHead(201, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(doc));
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: err.message }));
+  }
+};
+
+//@desc update a business
+//@route
+export const update = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await parseBody(req);
+    const updated = await Business.findByIdAndUpdate(id, data, { new: true });
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(updated));
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "failed to update" }));
+  }
+};
+//@desc delete a business
+//@route
+export const remove = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await Business.findByIdAndDelete(id);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "Deleted" }));
+  } catch (err) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "failed to delete" }));
+  }
+};
