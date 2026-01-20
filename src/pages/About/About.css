@@ -1,4 +1,4 @@
-/* About Page Specific Styles - EXACTLY matching your HTML/CSS */
+/* About Section */
 .about-section {
     display: flex;
     gap: 50px;
@@ -19,15 +19,6 @@
     line-height: 1.2;
 }
 
-.about-text p {
-    font-family: var(--font-desc);
-    font-size: 1.125rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    color: var(--text-white);
-}
-
-/* Gallery Styles - EXACTLY as you provided */
 .about-gallery {
     flex: 1;
     display: grid;
@@ -58,31 +49,22 @@
     right: 15px;
     font-weight: bold;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    color: var(--text-white);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
-/* Form Section - EXACTLY as you provided */
+/* Form Section */
 .form-section {
     padding: 60px 5%;
-    background-color: rgba(255, 255, 255, 0.02);
-    max-width: var(--container-width);
-    margin: 0 auto;
+    background-color: rgba(255,255,255,0.02);
 }
 
-.form-section .section-title {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-/* Form Card - EXACTLY as you provided */
 .form-card {
     background-color: var(--secondary-bg);
     max-width: 600px;
     margin: 0 auto;
     padding: 40px;
     border-radius: 30px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .form-group {
@@ -95,11 +77,9 @@
     font-weight: bold;
     text-transform: uppercase;
     font-size: 0.9rem;
-    color: var(--text-white);
 }
 
-.form-group input,
-.form-group textarea {
+.form-group input, .form-group textarea {
     width: 100%;
     padding: 12px;
     background: transparent;
@@ -114,41 +94,60 @@
     min-height: 120px;
 }
 
-/* Button styles */
-.btn {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 12px 30px;
-    background-color: var(--accent-green);
-    color: var(--primary-bg);
-    border: none;
-    border-radius: var(--border-radius-btn);
-    font-family: var(--font-main);
-    font-weight: 500;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+/* Text utilities */
+.text-green {
+    color: var(--accent-green);
 }
 
-.btn:hover {
-    background-color: #32e00f;
-    transform: translateY(-2px);
+.script-font {
+    font-family: var(--font-logo);
 }
 
-.btn:active {
-    transform: translateY(0);
-}
-
-/* Utility classes */
 .text-center {
     text-align: center;
 }
 
-/* Responsive adjustments */
+/* Divider */
+.divider {
+    border: none;
+    border-top: 2px solid var(--accent-green);
+    margin: 40px auto;
+    max-width: var(--container-width);
+}
+
+/* Section Title */
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    font-family: var(--font-heading);
+}
+
+/* Button */
+.btn {
+    padding: 12px 32px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-family: var(--font-primary);
+}
+
+.btn-primary {
+    background-color: var(--accent-green);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-green-dark);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .about-section {
         flex-direction: column;
+        text-align: center;
         gap: 30px;
     }
     
@@ -158,5 +157,13 @@
     
     .about-gallery {
         width: 100%;
+    }
+    
+    .form-card {
+        padding: 30px 20px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
     }
 }

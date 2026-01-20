@@ -1,0 +1,176 @@
+{
+  "featuredBusinesses": [
+    {
+      "id": "b1",
+      "name": "Student Center Cafeteria",
+      "slug": "student-center-cafeteria",
+      "category": "on-campus",
+      "description": "The central hub for student dining. Offers traditional and modern meals.",
+      "rating": 4.2,
+      "reviewCount": 156,
+      "address": "6k Campus, Main Hall",
+      "image": "https://images.unsplash.com/photo-1567529684892-09290a1b2d05",
+      "isFeatured": true
+    },
+    {
+      "id": "b2",
+      "name": "Campus Coffee Corner",
+      "slug": "campus-coffee-corner",
+      "category": "on-campus",
+      "description": "Cozy coffee shop offering Ethiopian coffee, pastries, and snacks.",
+      "rating": 4.5,
+      "reviewCount": 89,
+      "address": "5k Campus, Library Building",
+      "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+      "isFeatured": true
+    },
+    {
+      "id": "b3",
+      "name": "Ethio-Fresh Restaurant",
+      "slug": "ethio-fresh-restaurant",
+      "category": "off-campus",
+      "description": "Authentic Ethiopian restaurant just outside 4k campus.",
+      "rating": 4.7,
+      "reviewCount": 234,
+      "address": "Near 4k Campus Gate",
+      "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1",
+      "isFeatured": false
+    },
+     {
+      "id": "b4",
+      "name": "Ethio-Fresh Restaurant",
+      "slug": "ethio-fresh-restaurant",
+      "category": "off-campus",
+      "description": "Authentic Ethiopian restaurant just outside 4k campus.",
+      "rating": 4.7,
+      "reviewCount": 234,
+      "address": "Near 4k Campus Gate",
+      "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1",
+      "isFeatured":true
+    }, 
+    {
+      "id": "b5",
+      "name": "Student Center Cafeteria",
+      "slug": "student-center-cafeteria",
+      "category": "on-campus",
+      "description": "The central hub for student dining. Offers traditional and modern meals.",
+      "rating": 4.2,
+      "reviewCount": 156,
+      "address": "6k Campus, Main Hall",
+      "image": "https://images.unsplash.com/photo-1567529684892-09290a1b2d05",
+      "isFeatured": true
+    },
+    {
+      "id": "b6",
+      "name": "Student Center Cafeteria",
+      "slug": "student-center-cafeteria",
+      "category": "on-campus",
+      "description": "The central hub for student dining. Offers traditional and modern meals.",
+      "rating": 4.2,
+      "reviewCount": 156,
+      "address": "6k Campus, Main Hall",
+      "image": "https://images.unsplash.com/photo-1567529684892-09290a1b2d05",
+      "isFeatured": true
+    }
+  ],
+  "reviews": [
+    {
+      "id": "r1",
+      "businessId": "b1",
+      "businessName": "Student Center Cafeteria",
+      "businessCategory": "on-campus",
+      "userId": "u1",
+      "userName": "Abebe Kebede",
+      "userAvatar": "https://i.pravatar.cc/150?img=1",
+      "rating": 5,
+      "title": "Best Traditional Food!",
+      "comment": "Best place for traditional food on campus! The Special Beyaynetu is amazing and the price is very reasonable for students.",
+      "date": "2026-01-15T10:30:00Z",
+      "likes": 12,
+      "isEdited": false
+    },
+    {
+      "id": "r2",
+      "businessId": "b2",
+      "businessName": "Campus Coffee Corner",
+      "businessCategory": "on-campus",
+      "userId": "u2",
+      "userName": "Tigist Alemu",
+      "userAvatar": "https://i.pravatar.cc/150?img=2",
+      "rating": 4,
+      "title": "Great Coffee Spot",
+      "comment": "Great food, but sometimes crowded during lunch hours. The staff is friendly and the coffee is excellent.",
+      "date": "2026-01-14T14:20:00Z",
+      "likes": 8,
+      "isEdited": false
+      
+    }
+    
+  ],
+  "users": [
+    {
+      "id": "u1",
+      "name": "Abebe Kebede",
+      "email": "abebe@student.aau.edu.et",
+      "avatar": "https://i.pravatar.cc/150?img=1",
+      "university": "AAU",
+      "dormitory": "6k",
+      "reviewCount": 12
+    },
+    {
+      "id": "u2",
+      "name": "Tigist Alemu",
+      "email": "tigist@student.aau.edu.et",
+      "avatar": "https://i.pravatar.cc/150?img=2",
+      "university": "AAU",
+      "dormitory": "5k",
+      "reviewCount": 8
+    }
+  ],
+  "deliveryServices": [
+    {
+      "id": "d1",
+      "name": "Campus Express Delivery",
+      "description": "Fast and reliable delivery service for AAU students.",
+      "rating": 4.5,
+      "deliveryFee": "15-30 ETB",
+      "averageTime": "25 mins",
+      "servicedAreas": [
+        "5k",
+        "6k",
+        "4k"
+      ],
+      "contact": {
+        "phone": "+251911234567",
+        "telegram": "@campusexpress"
+      },
+      "logo": "https://example.com/logos/campus-express.png",
+      "isActive": true
+    }
+  ],
+  "categories": [
+    {
+      "id": "on-campus",
+      "name": "On Campus",
+      "description": "Restaurants and cafes located within AAU campuses",
+      "count": 25
+    }
+  ],
+  "locations": [
+    {
+      "id": "4k",
+      "name": "4 Kilo Campus",
+      "description": "Main campus area"
+    }
+  ],
+  "businessApplications": [
+    {
+      "id": "8823",
+      "businessName": "betsinat",
+      "location": "somewhere",
+      "description": "sajhhsd",
+      "date": "2026-01-20T10:48:25.782Z",
+      "status": "pending"
+    }
+  ]
+}
