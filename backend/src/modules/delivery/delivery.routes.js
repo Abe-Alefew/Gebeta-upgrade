@@ -24,4 +24,29 @@ export const registerDeliveryRoutes = (app) => {
             DeliveryController.updateStatus
         )
     );
+
+    // Get all delivery services
+    app.get(
+        "/api/delivery",
+        applyMiddleware(authMiddleware, DeliveryController.getAllServices)
+    );
+    // Get top rated delivery services
+    app.get(
+        "/api/delivery/top",
+        applyMiddleware(authMiddleware, DeliveryController.getTopRatedServices)
+    );
+
+    // Get delivery service by id
+    app.get(
+        "/api/delivery/:id",
+        applyMiddleware(authMiddleware, DeliveryController.getServiceById)
+    );
+
+    
+
+    // Cancel delivery (User)
+    app.delete(
+        "/api/delivery/:id",
+        applyMiddleware(authMiddleware, authorize("user", "admin", "business_owner"),DeliveryController.cancelDelivery)
+    );
 };

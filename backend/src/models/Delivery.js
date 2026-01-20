@@ -9,7 +9,12 @@ const deliverySchema = new mongoose.Schema(
         },
         business: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Business",
+            ref: "Business", // The restaurant/shop
+            required: true,
+        },
+        deliveryService: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "Business", // The service provider (category: "delivery")
             required: true,
         },
         // Reference for the person making the delivery
@@ -52,8 +57,7 @@ const deliverySchema = new mongoose.Schema(
             default: 0, // Usually set based on campus distance
         },
         totalAmount: {
-            type: Number,
-            required: true,
+            type: Number
         },
         paymentMethod: {
             type: String,

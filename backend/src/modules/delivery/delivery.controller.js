@@ -11,11 +11,11 @@ export const createRequest = async (req, res) => {
         if (!req.user) throw new ApiError(401, "Not authorized");
 
         const body = await parseBody(req);
-        const { businessId, orderItems, deliveryAddress, contactNumber, instructions, totalAmount, campusLocation } = body;
+        const { businessId, orderItems, deliveryService, deliveryAddress, contactNumber, instructions, campusLocation } = body;
 
         // Validate
-        if (!businessId || !orderItems || orderItems.length === 0 || !deliveryAddress || !contactNumber || !campusLocation) {
-            throw new ApiError(400, "Please provide complete order details (business, items, address, contact, campus location)");
+        if (!businessId || !orderItems || orderItems.length === 0 || !deliveryAddress || !contactNumber || !campusLocation || !deliveryService) {
+            throw new ApiError(400, "Please provide complete order details (business, items, address, delivery service provider, contact, campus location)");
         }
 
         const business = await Business.findById(businessId);
@@ -24,24 +24,25 @@ export const createRequest = async (req, res) => {
         const delivery = await Delivery.create({
             user: req.user._id,
             business: businessId,
+            deliveryService: deliveryService,
             orderItems,
             deliveryAddress,
             contactNumber,
             instructions,
             campusLocation,
             deliveryFee: 15, // Example ETB fee
-            totalAmount,
+            // totalAmount,
             status: "Pending"
         });
 
-        await delivery.save();
+        
 
         const response = new ApiResponse(201, delivery, "Delivery request created");
         res.writeHead(201, { "Content-Type": "application/json" });
         res.end(JSON.stringify(response));
     } catch (error) {
         console.log("error message:", error)
-        throw new ApiError(500, "Failed to create delivery request");
+        throw new ApiError(500, "Failed to create delivery request", [error]);
     }
 };
 
@@ -89,5 +90,81 @@ export const updateStatus = async (req, res) => {
         res.end(JSON.stringify(response));
     } catch (error) {
         throw new ApiError(500, "Failed to update delivery status");
+    }
+};
+
+// @desc Get all delivery services
+// @route GET /api/delivery
+export const getAllServices = async (req, res) => {
+    try {
+        // We filter the Business model for the "delivery" category
+        const services = await Business.find({ category: "delivery" })
+            .sort("-rating.average");
+
+        const response = new ApiResponse(200, services, "Delivery services fetched");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    } catch (error) {
+        throw new ApiError(500, "Failed to fetch services");
+    }
+};
+
+// @desc Get delivery service by id
+// @route GET /api/delivery/:id
+export const getServiceById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        //  Find business that is specifically in the 'delivery' category
+        const service = await Business.findOne({ 
+            _id: id, 
+            category: "delivery" 
+        });
+        if (!service) throw new ApiError(404, "Delivery Service not found");
+
+        const response = new ApiResponse(200, service, "Service fetched");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    } catch (error) {
+        throw new ApiError(500, "Failed to fetch service");
+    }
+};
+
+// @desc get top 5 rated deliveries
+// @route GET /api/delivery/top
+export const getTopRatedServices = async (req, res) => {
+    try {
+        const topProviders = await Business.find({ category: "delivery" })
+            .sort({ "rating.average": -1 })
+            .limit(5);
+
+        const response = new ApiResponse(200, topProviders, "Top rated providers");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    } catch (error) {
+        console.log(error)
+        throw new ApiError(500, "Failed to fetch top services");
+    }
+};
+
+// @desc cancel delivery
+// @route DELETE /api/delivery/:id
+export const cancelDelivery = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const delivery = await Delivery.findById(id);
+        if (!delivery) throw new ApiError(404, "Delivery not found");
+
+        if (delivery.status !== "Pending") {
+            throw new ApiError(400, "Only pending deliveries can be cancelled");
+        }
+
+        delivery.status = "Cancelled";
+        await delivery.save();
+
+        const response = new ApiResponse(200, delivery, "Delivery cancelled");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    } catch (error) {
+        throw new ApiError(500, "Failed to cancel delivery");
     }
 };
