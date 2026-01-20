@@ -1,4 +1,5 @@
 import Business from "../../models/Business.js";
+import { User } from "../../models/User.js";
 import mongoose from "mongoose";
 //@desc get all businesses with search and category filter
 //@route GET
@@ -106,12 +107,23 @@ export const getByCategory = async (req, res) => {
     res.end(JSON.stringify({ error: "Categrory fetch failed" }));
   }
 };
-//@desc create a business list
+//desc create a business list
 //@route
 export const create = async (req, res) => {
   try {
     const data = req.body;
+
+    // Assign the current user as the owner
+    // if (req.user) {
+    //   data.owner = req.user._id;
+    // }
+
     const doc = await Business.create(data);
+
+    // Upgrade user role to business_owner if they are a standard user
+    if (req.user && req.user.role === "user") {
+      await User.findByIdAndUpdate(req.user._id, { role: "business_owner" });
+    }
 
     res.writeHead(201, { "Content-Type": "application/json" });
     res.end(JSON.stringify(doc));
@@ -141,7 +153,7 @@ export const update = async (req, res) => {
 export const remove = async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = await Business.findByIdAndDelete(id);
+    const deleted = await Business.findByIdAndDelete(id);
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Deleted" }));
