@@ -13,7 +13,7 @@ import CustomerReview from './pages/CustomerReview/CustomerReview';
 import SubmitReview from './pages/SubmitReview/SubmitReview';
 import Login from './pages/Login/Login';
 import MenuItemDetail from './pages/MenuItemDetail/MenuItemDetail';
-
+import UserProfile from './pages/UserProfile/UserProfile';
 
 function Layout() {
   const location = useLocation();
@@ -32,6 +32,7 @@ function Layout() {
           <Route path="/submit-review" element={<SubmitReview />} />
           <Route path="/login" element={<Login />} />
           <Route path="/menu-item" element={<MenuItemDetail />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Routes>
       </main>
       {!hideHeaderFooter && <Footer />}

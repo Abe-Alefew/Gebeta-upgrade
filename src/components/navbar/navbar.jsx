@@ -54,17 +54,11 @@ const Navbar = () => {
             <Link to="/about" className={`menu-list ${isActive('/about')}`}>
               About
             </Link>
-            
-            {/* Optional: Add these if you have authentication */}
-            {/* <div className="mobile-auth" style={{ display: 'none' }}>
-              <AuthLinks />
-            </div> */}
+            <Link to="/profile">
+   Profile
+</Link>
           </div>
 
-          {/* Optional: Desktop auth links */}
-          {/* <div className="desktop-auth">
-            <AuthLinks />
-          </div> */}
 
           <div className="hamburger-container">
             <button 
