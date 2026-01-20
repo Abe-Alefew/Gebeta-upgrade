@@ -154,13 +154,32 @@ const CustomerReview = () => {
       }
     };
 
-    // Use the synced menu items
+    // Fetch menu items from API, fallback to hardcoded
     const fetchMenuItems = async () => {
       try {
-        setMenuItems(allMenuItems.slice(0, 8)); // Take first 8 items
+        const businessId = location.state?.business?.id || params.id || 'b1';
+        const response = await fetch(`/api/menu/${businessId}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Map API data to expected format if needed
+          const mappedItems = data.map(item => ({
+            id: item.id,
+            name: item.itemName,
+            price: `${item.price} ${item.currency}`,
+            image: item.image || 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=800&auto=format&fit=crop', // fallback image
+            description: item.description,
+            rating: item.rating || 4.5,
+            reviewCount: item.reviewCount || 0,
+            category: item.category
+          }));
+          setMenuItems(mappedItems);
+        } else {
+          throw new Error('API response not ok');
+        }
       } catch (error) {
         console.error('Error fetching menu items:', error);
-        setMenuItems(allMenuItems.slice(0, 8));
+        setMenuItems(allMenuItems.slice(0, 8)); // Fallback to hardcoded
       }
     };
 
