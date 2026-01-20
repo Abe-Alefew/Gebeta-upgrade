@@ -1,0 +1,419 @@
+/* src/pages/Home/Home.css */
+/* Hero Section */
+.home-page {
+  font-family: var(--font-primary, 'Poppins', sans-serif);
+}
+
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 5%;
+  min-height: 80vh;
+  max-width: var(--container-width, 1200px);
+  margin: 0 auto;
+  gap: 40px;
+}
+
+.hero-content {
+  flex: 1;
+}
+
+.hero-title {
+  font-family: var(--font-heading, 'Poppins', sans-serif);
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: var(--text-color);
+}
+
+.hero-description {
+  font-family: var(--font-desc, 'Roboto', sans-serif);
+  font-size: 18px;
+  color: var(--text-grey);
+  margin-bottom: 40px;
+  max-width: 500px;
+}
+
+/* Update hero buttons to match business card button style */
+.hero-buttons {
+  display: flex;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.hero-buttons a {
+  display: inline-block;
+  width: auto;
+}
+
+/* Override the default button styles for hero buttons */
+.hero-buttons .btn {
+  padding: 10px 50px; /* Similar to business button padding */
+  font-size: 18px; /* Slightly larger font */
+  font-weight: normal; /* Remove bold */
+  border-radius: 54px; /* Same as business buttons */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid var(--accent-green); /* Add border for both */
+  font-family: var(--font-logo, 'Pacifico', cursive); /* Same font as business buttons */
+  min-width: 160px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* Primary button (Explore) - Make it like business button hover state */
+.hero-buttons .btn-primary {
+  background-color: var(--accent-green);
+  color: #252953; /* Dark text color like business button hover */
+  border: 2px solid var(--accent-green);
+}
+
+.hero-buttons .btn-primary:hover {
+  background-color: transparent;
+  color: var(--accent-green);
+}
+
+/* Outline button (Rate) - Make it like business button default state */
+.hero-buttons .btn-outline {
+  background-color: transparent;
+  color: var(--accent-green);
+  border: 2px solid var(--accent-green);
+}
+
+.hero-buttons .btn-outline:hover {
+  background-color: var(--accent-green);
+  color: #252953; /* Dark text color on hover */
+}
+
+/* For mobile */
+@media (max-width: 768px) {
+  .hero-buttons {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .hero-buttons a {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .hero-buttons .btn {
+    width: 100%;
+    padding: 12px 40px;
+  }
+}
+
+.hero-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-image img {
+  border-radius: 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
+  height: auto;
+}
+
+/* Buttons */
+.btn {
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: var(--font-primary, 'Poppins', sans-serif);
+}
+
+.btn-primary {
+  background-color: var(--accent-green, #4CAF50);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-green-dark, #45a049);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--accent-green, #4CAF50);
+  color: var(--accent-green, #4CAF50);
+}
+
+.btn-outline:hover {
+  background-color: var(--accent-green, #4CAF50);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Features Section */
+.features-section {
+  padding: 40px;
+  margin: 40px auto;
+  max-width: var(--container-width, 1200px);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 300px 380px 300px;
+  gap: 31px;
+  justify-content: center;
+}
+
+.feature-card {
+  background: transparent;
+  border: 2px solid var(--accent-green, #4CAF50);
+  border-radius: 100px;
+  padding: 30px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.feature-card:nth-child(1),
+.feature-card:nth-child(3) {
+  height: 460px;
+  transform: translateY(45px);
+}
+
+.feature-card.highlight {
+  height: 575px;
+  border-width: 4px;
+  transform: translateY(0);
+}
+
+.feature-card img {
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
+  margin-bottom: 30px;
+}
+
+.feature-card h3 {
+  margin-bottom: 30px;
+  color: var(--accent-green, #4CAF50);
+  font-size: 30px;
+  font-family: var(--font-heading, 'Poppins', sans-serif);
+  line-height: 1.2;
+}
+
+.feature-card p {
+  margin: 30px;
+  color: var(--text-grey);
+  font-size: 18px;
+  font-family: var(--font-primary, 'Poppins', sans-serif);
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 2px solid var(--accent-green, #4CAF50);
+  margin: 40px auto;
+  max-width: var(--container-width, 1200px);
+}
+
+/* Featured Businesses Section */
+.featured-businesses {
+  padding: 60px 5%;
+}
+
+.featured-businesses h2.section-title {
+  color: var(--text-color);
+  font-size: 40px;
+  margin: 20px auto 75px 10px;
+  max-width: var(--container-width, 1200px);
+  font-family: var(--font-heading, 'Poppins', sans-serif);
+}
+
+.businesses-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 270px);
+  grid-auto-rows: 387px;
+  gap: 20px;
+  justify-content: start;
+  margin: 0 auto;
+  padding: 0 40px;
+  max-width: var(--container-width, 1200px);
+}
+
+.businesses-grid > :nth-child(5) {
+  grid-column: 2 / 3;
+}
+
+.businesses-grid > :nth-child(6) {
+  grid-column: 3 / 4;
+}
+
+.business-card {
+  background-color: #252953;
+  border-radius: 24px;
+  border-bottom: 1px solid var(--accent-green, #4CAF50);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-heading, 'Poppins', sans-serif);
+  min-height: 387px;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.business-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.business-image-wrapper {
+  width: 100%;
+  height: 160px;
+  position: relative;
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
+}
+
+.business-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.business-card:hover .business-image-wrapper img {
+  transform: scale(1.05);
+}
+
+.business-overlay-title {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  font-size: 25px;
+  font-weight: bold;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  backdrop-filter: blur(4px);
+}
+
+.business-review {
+  font-size: 15px;
+  text-align: center;
+  margin: 15px 10px 5px;
+  font-family: var(--font-primary, 'Poppins', sans-serif);
+  line-height: 1.4;
+  padding: 0 10px;
+}
+
+.review-author {
+  font-size: 15px;
+  margin-bottom: 10px;
+  font-family: var(--font-primary, 'Poppins', sans-serif);
+  color: #ccc;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.business-card .btn-outline {
+  border: 2px solid var(--accent-green, #4CAF50);
+  border-radius: 54px;
+  padding: 8px 40px;
+  color: var(--accent-green, #4CAF50);
+  font-family: var(--font-logo, 'Pacifico', cursive);
+  background: transparent;
+  cursor: pointer;
+  margin: 20px auto;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  min-width: 160px;
+}
+
+.business-card .btn-outline:hover {
+  background-color: var(--accent-green, #4CAF50);
+  color: #252953;
+}
+
+
+
+/* Statistics Section */
+.stats-section {
+  padding: 60px 5%;
+  background-color: var(--background-color); 
+  margin-top: 60px;
+  border-top: 2px solid var(--accent-green);
+  border-bottom: 2px solid var(--accent-green, #4CAF50);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  max-width: var(--container-width, 1200px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.stat-item h3 {
+  font-size: 48px;
+  color: var(--accent-green, #4CAF50);
+  margin-bottom: 10px;
+  font-family: var(--font-heading, 'Poppins', sans-serif);
+  text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.stat-item p {
+  font-size: 18px;
+  color: var(--background-color, #ffffff); /* White text for dark background */
+  font-family: var(--font-primary, 'Poppins', sans-serif);
+  opacity: 0.9;
+}
+
+/* Optional: Add some glow effects to match your design */
+.stat-item {
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-green, #4CAF50);
+  box-shadow: 0 10px 25px rgba(76, 175, 80, 0.2);
+}
+
+
+@media (max-width: 768px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .hero-title {
+    font-size: 32px;
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
