@@ -18,7 +18,7 @@ import UserProfile from './pages/UserProfile/UserProfile';
 function Layout() {
   const location = useLocation();
   // Hide header and footer on login page
-  const hideHeaderFooter = location.pathname === '/login' || location.pathname.startsWith('/login/');
+  const hideHeaderFooter = location.pathname === '/Login' || location.pathname.startsWith('/Login/');
 
   return (
     <div className="app">
