@@ -4,43 +4,86 @@ import './Home.css';
 
 const Home = () => {
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchFeaturedBusinesses();
+    fetchData();
   }, []);
 
-  const fetchFeaturedBusinesses = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:3004/featuredBusinesses?isFeatured=true');
+      // Fetch featured businesses AND reviews
+      const [businessesResponse, reviewsResponse] = await Promise.all([
+        fetch('http://localhost:3004/featuredBusinesses?isFeatured=true'),
+        fetch('http://localhost:3004/reviews?_limit=6&_sort=date&_order=desc')
+      ]);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!businessesResponse.ok || !reviewsResponse.ok) {
+        throw new Error('Failed to fetch data from server');
       }
       
-      const data = await response.json();
-      setFeaturedBusinesses(data);
+      const businessesData = await businessesResponse.json();
+      const reviewsData = await reviewsResponse.json();
+      
+      setFeaturedBusinesses(businessesData);
+      setReviews(reviewsData);
     } catch (err) {
       setError(err.message);
-      console.error('Error fetching featured businesses:', err);
+      console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Get businesses to display (either from API or fallback)
+  // Get businesses to display
   const businessesToDisplay = featuredBusinesses.length > 0 
     ? featuredBusinesses.slice(0, 6)
     : [
         // Fallback static data if API returns nothing
-        { id: 1, name: "DESTA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-1.png" },
-        { id: 2, name: "123FASTFOOD", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-2.png" },
-        { id: 3, name: "CHRISTINA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-3.png" },
-        { id: 4, name: "SLEEK DELIVERY", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-4.png" },
-        { id: 5, name: "DESTA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-5.png" },
-        { id: 6, name: "DESTA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-1.png" }
+        { id: 1, name: "DESTA CAFE", description: "Great coffee and sandwiches!", image: "./images/featured-1.png" },
+        { id: 2, name: "123FASTFOOD", description: "Fast delivery and tasty burgers", image: "./images/featured-2.png" },
+        { id: 3, name: "CHRISTINA CAFE", description: "Best traditional food on campus", image: "./images/featured-3.png" },
+        { id: 4, name: "SLEEK DELIVERY", description: "Reliable delivery service", image: "./images/featured-4.png" },
+        { id: 5, name: "DESTA CAFE", description: "Perfect for quick lunches", image: "./images/featured-5.png" },
+        { id: 6, name: "DESTA CAFE", description: "Friendly staff and great prices", image: "./images/featured-1.png" }
       ];
+
+  // Get reviews for each business
+  const getBusinessReview = (business, index) => {
+    // Try to find a review for this business
+    if (reviews.length > 0) {
+      const businessReview = reviews.find(review => review.businessId === business.id);
+      if (businessReview) {
+        return {
+          text: businessReview.comment || businessReview.title,
+          author: `- ${businessReview.userName}`,
+          rating: `⭐ ${businessReview.rating}`,
+          isReal: true
+        };
+      }
+      
+      // If no specific review, use any review
+      const anyReview = reviews[index % reviews.length];
+      if (anyReview) {
+        return {
+          text: anyReview.comment || anyReview.title,
+          author: `- ${anyReview.userName}`,
+          rating: `⭐ ${anyReview.rating}`,
+          isReal: true
+        };
+      }
+    }
+    
+    // Fallback static review
+    return {
+      text: "I ORDERED FROM HERE LAST WEEK - GOT MY ORDER IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.",
+      author: "- ANNA, 2ND YEAR",
+      rating: "⭐ 4.5",
+      isReal: false
+    };
+  };
 
   return (
     <div className="home-page">
@@ -107,22 +150,31 @@ const Home = () => {
           </div>
         ) : (
           <div className="businesses-grid">
-            {businessesToDisplay.map((business, index) => (
-              <div key={business.id || index} className="business-card">
-                <div className="business-image-wrapper">
-                  <img 
-                    src={business.image} 
-                    alt={business.name} 
-                  />
-                  <h3 className="business-overlay-title">{business.name.toUpperCase()}</h3>
+            {businessesToDisplay.map((business, index) => {
+              const review = getBusinessReview(business, index);
+              
+              return (
+                <div key={business.id || index} className="business-card">
+                  <div className="business-image-wrapper">
+                    <img 
+                      src={business.image} 
+                      alt={business.name} 
+                      onError={(e) => {
+                        e.target.src = `./images/featured-${(index % 5) + 1}.png`;
+                      }}
+                    />
+                    <h3 className="business-overlay-title">{business.name.toUpperCase()}</h3>
+                  </div>
+                  <p className="business-review">
+                    "{review.text.substring(0, 100)}{review.text.length > 100 ? '...' : ''}"
+                  </p>
+                  <p className="review-author">
+                    {review.rating} • {review.author}
+                  </p>
+                  <button className="btn btn-outline">See More</button>
                 </div>
-                <p className="business-review">
-                  "{business.description}"
-                </p>
-                <p className="review-author">- ANNA, 2ND YEAR</p>
-                <button className="btn btn-outline">See More</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
