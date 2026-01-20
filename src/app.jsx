@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/navbar/navbar';
 import Footer from './components/footer/footer';
 import './styles/global.css';
@@ -15,26 +15,34 @@ import Login from './pages/Login/Login';
 import MenuItemDetail from './pages/MenuItemDetail/MenuItemDetail';
 
 
+function Layout() {
+  const location = useLocation();
+  const hideHeaderFooter = location.pathname === '/login';
+
+  return (
+    <div className="app">
+      {!hideHeaderFooter && <Navbar />}
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/delivery" element={<Delivery />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/customer-review" element={<CustomerReview />} />
+          <Route path="/submit-review" element={<SubmitReview />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/menu-item" element={<MenuItemDetail />} />
+        </Routes>
+      </main>
+      {!hideHeaderFooter && <Footer />}
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
-      <div className="app">
-        <Navbar />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/delivery" element={<Delivery />} />
-            <Route path="/reviews" element={<Reviews />} />
-            <Route path="/customer-review" element={<CustomerReview />} />
-            <Route path="/submit-review" element={<SubmitReview />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/menu-item" element={<MenuItemDetail />} />
-          
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <Layout />
     </Router>
   );
 }
