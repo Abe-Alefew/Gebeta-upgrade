@@ -143,30 +143,82 @@ const Home = () => {
   return (
     <div className="home-page">
       {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-image">
-          <img 
-            src="https://plus.unsplash.com/premium_photo-1695297516798-d275bdf26575?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3MjAxN3wwfDF8c2VhcmNofDV8fGV0aGlvcGlhbiUyMGZvb2R8ZW58MHx8fHwxNzY4OTA0NTk3fDA&ixlib=rb-4.1.0&q=85&q=85&fmt=jpg&crop=entropy&cs=tinysrgb&w=450" 
-            alt="Delicious campus food" 
-          />
-        </div>
-        <div className="hero-content">
-          <h1 className="hero-title">DISCOVER THE BEST<br />EATS IN & AROUND<br />CAMPUS</h1>
-          <p className="hero-description">
-            From hidden cafeteria gems to top-rated street spots and student-run delivery
-            startups, explore every bite your university has to offer.
-          </p>
-          <div className="hero-buttons">
-            <Link to="/reviews">
-              <button className="btn btn-primary">Explore</button>
-            </Link>
-            <Link to="/submit-review">
-              <button className="btn btn-outline">Rate</button>
-            </Link>
-          </div>
-        </div>
-      </section>
-      <hr className="divider" />
+      {/* Hero Section */}
+<section style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '60px 5%',
+  minHeight: '80vh',
+  maxWidth: '1200px',
+  margin: '0 auto',
+  gap: '60px',
+  backgroundColor: '#050A30',
+  flexDirection: 'row'
+}}>
+  {/* Image on LEFT */}
+  <div style={{
+    flex: 1,
+    maxWidth: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }}>
+    <img 
+      src="https://plus.unsplash.com/premium_photo-1695297516798-d275bdf26575?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3MjAxN3wwfDF8c2VhcmNofDV8fGV0aGlvcGlhbiUyMGZvb2R8ZW58MHx8fHwxNzY4OTA0NTk3fDA&ixlib=rb-4.1.0&q=85&q=85&fmt=jpg&crop=entropy&cs=tinysrgb&w=450" 
+      alt="Delicious campus food"
+      style={{
+        width: '100%',
+        maxWidth: '500px',
+        height: '500px',
+        borderRadius: '40px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+      }}
+    />
+  </div>
+  
+  {/* Content on RIGHT */}
+  <div style={{
+    flex: 1,
+    maxWidth: '50%'
+  }}>
+    <h1 style={{
+      fontFamily: "'Poppins', sans-serif",
+      fontSize: '40px',
+      fontWeight: '800',
+      lineHeight: '1.2',
+      marginBottom: '20px',
+      color: '#ffffff'
+    }}>
+      DISCOVER THE BEST<br />EATS IN & AROUND<br />CAMPUS
+    </h1>
+    <p style={{
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '18px',
+      color: '#cccccc',
+      marginBottom: '40px',
+      maxWidth: '500px'
+    }}>
+      From hidden cafeteria gems to top-rated street spots and student-run delivery
+      startups, explore every bite your university has to offer.
+    </p>
+    <div style={{ display: 'flex', gap: '20px' }}>
+  <Link to="/reviews">
+    <button className="btn btn-primary">Explore</button>
+  </Link>
+  <Link to="/submit-review">
+    <button className="btn btn-outline">Rate</button>
+  </Link>
+</div>
+  </div>
+</section>
+<hr style={{
+  border: 'none',
+  height: '1px',
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  margin: '0'
+}} />
+<hr className="divider" />
 
       {/* Features Section */}
       <section className="features-section">
