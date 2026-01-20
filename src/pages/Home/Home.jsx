@@ -1,10 +1,46 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import mockData from '../../Mock-data/mock-data.json';
 import './Home.css';
 
 const Home = () => {
-  const { featuredBusinesses, statistics } = mockData.home;
+  const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchFeaturedBusinesses();
+  }, []);
+
+  const fetchFeaturedBusinesses = async () => {
+    try {
+      const response = await fetch('http://localhost:3004/featuredBusinesses?isFeatured=true');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setFeaturedBusinesses(data);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching featured businesses:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get businesses to display (either from API or fallback)
+  const businessesToDisplay = featuredBusinesses.length > 0 
+    ? featuredBusinesses.slice(0, 6)
+    : [
+        // Fallback static data if API returns nothing
+        { id: 1, name: "DESTA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-1.png" },
+        { id: 2, name: "123FASTFOOD", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-2.png" },
+        { id: 3, name: "CHRISTINA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-3.png" },
+        { id: 4, name: "SLEEK DELIVERY", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-4.png" },
+        { id: 5, name: "DESTA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-5.png" },
+        { id: 6, name: "DESTA CAFE", description: "I ORDERED FROM DESTA LAST WEEK - GOT MY SANDWICH IN 10 MINUTES! SUPER FAST AND FRIENDLY SERVICE.", image: "./images/featured-1.png" }
+      ];
 
   return (
     <div className="home-page">
@@ -12,14 +48,15 @@ const Home = () => {
       <section className="hero-section">
         <div className="hero-image">
           <img 
-            src="https://plus.unsplash.com/premium_photo-1695297516692-82b537c62733?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
-            alt="Delicious campus food and students enjoying meals" 
+            src="https://plus.unsplash.com/premium_photo-1695297516798-d275bdf26575?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3MjAxN3wwfDF8c2VhcmNofDV8fGV0aGlvcGlhbiUyMGZvb2R8ZW58MHx8fHwxNzY4OTA0NTk3fDA&ixlib=rb-4.1.0&q=85&q=85&fmt=jpg&crop=entropy&cs=tinysrgb&w=450" 
+            alt="Delicious campus food" 
           />
         </div>
         <div className="hero-content">
           <h1 className="hero-title">DISCOVER THE BEST<br />EATS IN & AROUND<br />CAMPUS</h1>
           <p className="hero-description">
-            From hidden cafeteria gems to top-rated street spots and student-run delivery startups, explore every bite your university has to offer.
+            From hidden cafeteria gems to top-rated street spots and student-run delivery
+            startups, explore every bite your university has to offer.
           </p>
           <div className="hero-buttons">
             <Link to="/reviews">
@@ -56,49 +93,38 @@ const Home = () => {
 
       <hr className="divider" />
 
-      {/* Featured Businesses Section - USING MOCK DATA */}
+      {/* Featured Businesses Section */}
       <section className="featured-businesses">
         <h2 className="section-title">FEATURED BUSINESSES</h2>
-        <div className="businesses-grid">
-          {featuredBusinesses.map((business, index) => (
-            <div key={business.id} className="business-card">
-              <div className="business-image-wrapper">
-                <img 
-                  src={business.image || `./images/featured-${(index % 5) + 1}.png`} 
-                  alt={business.name} 
-                />
-                <h3 className="business-overlay-title">{business.name.toUpperCase()}</h3>
-              </div>
-              <p className="business-review">
-                "{business.description.substring(0, 100)}..."
-              </p>
-              <p className="review-author">
-                ⭐ {business.rating} • {business.reviewCount} reviews
-              </p>
-              <Link to={`/business/${business.slug}`}>
+        
+        {loading ? (
+          <div style={{textAlign: 'center', padding: '40px', color: 'var(--text-color)'}}>
+            Loading featured businesses...
+          </div>
+        ) : error ? (
+          <div style={{textAlign: 'center', padding: '40px', color: '#ff4444'}}>
+            Error loading businesses. Please make sure JSON Server is running on port 3004.
+          </div>
+        ) : (
+          <div className="businesses-grid">
+            {businessesToDisplay.map((business, index) => (
+              <div key={business.id || index} className="business-card">
+                <div className="business-image-wrapper">
+                  <img 
+                    src={business.image} 
+                    alt={business.name} 
+                  />
+                  <h3 className="business-overlay-title">{business.name.toUpperCase()}</h3>
+                </div>
+                <p className="business-review">
+                  "{business.description}"
+                </p>
+                <p className="review-author">- ANNA, 2ND YEAR</p>
                 <button className="btn btn-outline">See More</button>
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Statistics Section - Optional */}
-      <section className="stats-section">
-        <div className="stats-grid">
-          <div className="stat-item">
-            <h3>{statistics.totalBusinesses}+</h3>
-            <p>Businesses Listed</p>
+              </div>
+            ))}
           </div>
-          <div className="stat-item">
-            <h3>{statistics.totalReviews}+</h3>
-            <p>Student Reviews</p>
-          </div>
-          <div className="stat-item">
-            <h3>{statistics.totalUsers}+</h3>
-            <p>Active Users</p>
-          </div>
-        </div>
+        )}
       </section>
     </div>
   );
