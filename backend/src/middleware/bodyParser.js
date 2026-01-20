@@ -2,15 +2,18 @@ import { ApiError } from "../utils/ApiError.js";
 
 
 export const jsonBodyParser = async (req, res, next) => {
+    return new Promise((resolve) => {
     //  Skip strictly if method has no body semantics
     if (["GET", "DELETE", "OPTIONS", "HEAD"].includes(req.method)) {
-        return next();
+        next();
+        return resolve();
     }
 
     //  Check Content-Type (must be application/json)
     const contentType = req.headers["content-type"];
     if (!contentType || !contentType.includes("application/json")) {
-        return next();
+        next();
+        return resolve();
     }
 
     //  Size Limit Configuration
@@ -45,9 +48,12 @@ export const jsonBodyParser = async (req, res, next) => {
         } catch (err) {
             next(new ApiError(400, "Invalid JSON format", [err.message]));
         }
+        resolve();
     });
 
     req.on("error", (err) => {
         next(new ApiError(400, "Stream Error", [err.message]));
+        return resolve();
+    });
     });
 };
