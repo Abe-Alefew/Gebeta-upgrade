@@ -6,7 +6,10 @@ import mongoose from "mongoose";
 //@route
 export const submitApplication = async (req, res) => {
   try {
-    const application = await Application.create(req.body);
+    const application = await Application.create({
+      ...req.body,
+      owner: req.user.id,
+    });
 
     res.writeHead(201, { "Content-Type": "application/json" });
     res.end(
