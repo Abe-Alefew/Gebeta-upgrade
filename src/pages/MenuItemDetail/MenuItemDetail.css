@@ -1,0 +1,486 @@
+/* MenuItemDetail.css - Centered Modal Style */
+
+/* ===== Modal Overlay ===== */
+.menu-item-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* ===== Modal Container ===== */
+.menu-item-modal-container {
+  width: 100%;
+  max-width: 800px;
+  min-height: 450px;
+  background-color: var(--primary-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Back Button - Left side */
+.modal-back-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: none;
+  border: none;
+  color: var(--text-white);
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 1001;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--accent-green);
+}
+
+/* ===== Main Content Layout ===== */
+.menu-item-modal-content {
+  display: flex;
+  height: 100%;
+  min-height: 450px;
+}
+
+/* ===== Left Section (Image - 60%) ===== */
+.modal-left-section {
+  flex: 1.5;
+  position: relative;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.modal-large-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.modal-large-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.modal-food-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.95));
+  padding: 18px 22px;
+  color: var(--text-white);
+}
+
+.modal-food-basic {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modal-food-basic h1 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.modal-food-price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--accent-green);
+}
+
+.modal-food-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.7rem;
+}
+
+.modal-food-rating span {
+  font-size: 0.65rem;
+  color: var(--text-grey);
+}
+
+.modal-food-desc {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-white);
+  opacity: 0.9;
+  max-width: 90%;
+}
+
+/* ===== Right Section ===== */
+.modal-right-section {
+  flex: 1;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--primary-bg);
+  overflow-y: auto;
+}
+
+/* Food Navigation */
+.modal-food-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-food-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  color: var(--text-white);
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+  letter-spacing: 0.3px;
+}
+
+.modal-nav-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-nav-arrow:hover {
+  background-color: var(--accent-green);
+  color: var(--primary-bg);
+  transform: scale(1.1);
+}
+
+/* Small Photos Section */
+.modal-small-photos {
+  margin-bottom: 20px;
+}
+
+.modal-small-photos h3 {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  color: var(--text-white);
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.modal-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.modal-small-photo {
+  width: 100%;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.modal-small-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-small-photo:hover {
+  border-color: var(--accent-green);
+  transform: translateY(-2px);
+}
+
+/* Review Section */
+.modal-review-section {
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.modal-review-heading {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  color: var(--text-white);
+  margin-bottom: 15px;
+  opacity: 0.9;
+}
+
+.modal-reviews-container {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Custom scrollbar for reviews */
+.modal-reviews-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal-reviews-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.modal-reviews-container::-webkit-scrollbar-thumb {
+  background: var(--accent-green);
+  border-radius: 2px;
+}
+
+.modal-review-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.modal-review-card:last-child {
+  margin-bottom: 0;
+}
+
+.modal-reviewer-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.modal-reviewer-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--accent-green);
+}
+
+.modal-reviewer-details h4 {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  color: var(--text-white);
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.modal-reviewer-details p {
+  font-size: 0.7rem;
+  color: var(--text-grey);
+  margin: 0 0 4px 0;
+}
+
+.modal-review-stars {
+  color: var(--accent-green);
+  font-size: 0.7rem;
+}
+
+.modal-review-text {
+  color: var(--text-grey);
+  line-height: 1.4;
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.modal-review-date {
+  text-align: right;
+  font-size: 0.65rem;
+  color: var(--text-grey);
+  opacity: 0.7;
+}
+
+/* Action Buttons */
+.modal-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: none;
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-btn-primary {
+  background-color: var(--accent-green);
+  color: var(--primary-bg);
+}
+
+.modal-btn-primary:hover {
+  background-color: #45e620;
+  transform: translateY(-2px);
+}
+
+.modal-btn-outline {
+  background-color: transparent;
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.modal-btn-outline:hover {
+  background-color: var(--accent-green);
+  color: var(--primary-bg);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1024px) {
+  .menu-item-modal-container {
+    max-width: 700px;
+  }
+  
+  .modal-food-basic h1 {
+    font-size: 1.2rem;
+  }
+  
+  .modal-food-price {
+    font-size: 1rem;
+  }
+  
+  .modal-food-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .menu-item-modal-overlay {
+    padding: 10px;
+  }
+  
+  .menu-item-modal-container {
+    max-width: 95%;
+    min-height: auto;
+  }
+  
+  .menu-item-modal-content {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .modal-left-section {
+    height: 250px;
+    flex: none;
+  }
+  
+  .modal-right-section {
+    padding: 20px;
+  }
+  
+  .modal-food-navigation {
+    margin-bottom: 20px;
+  }
+  
+  .modal-small-photo {
+    height: 70px;
+  }
+  
+  .modal-reviews-container {
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-item-modal-container {
+    border-radius: 15px;
+  }
+  
+  .modal-back-btn {
+    top: 10px;
+    left: 10px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+  
+  .modal-left-section {
+    height: 200px;
+  }
+  
+  .modal-food-overlay {
+    padding: 12px 15px;
+  }
+  
+  .modal-food-basic h1 {
+    font-size: 1rem;
+  }
+  
+  .modal-food-price {
+    font-size: 0.9rem;
+  }
+  
+  .modal-food-desc {
+    font-size: 0.7rem;
+  }
+  
+  .modal-right-section {
+    padding: 15px;
+  }
+  
+  .modal-food-title {
+    font-size: 0.9rem;
+  }
+  
+  .modal-nav-arrow {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .modal-small-photo {
+    height: 50px;
+  }
+  
+  .modal-reviews-container {
+    max-height: 120px;
+  }
+  
+  .modal-btn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+}
