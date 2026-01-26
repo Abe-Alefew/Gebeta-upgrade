@@ -1,32 +1,38 @@
 import { ApiError } from "../utils/ApiError.js";
 
-// cors middleware - restricing access to allowed origin
 
-const allowedOrigins = [ "http://localhost:3000", "https://localhost:5173"]; // to be added - todo
+const allowedOrigins = [ "http://localhost:3000", "http://localhost:5173" ];
 
-export const corsMiddleware = (req,res, next) => {
+export const corsMiddleware = (req, res, next) => {
     const origin = req.headers.origin;
-    // allowing requests with no origin
-    if(!origin){
+
+    // Allow requests with no origin (like Postman or mobile apps)
+    if (!origin) {
         return next();
     }
 
-    if(allowedOrigins.includes(origin)){
+    if (allowedOrigins.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
-        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         res.setHeader("Access-Control-Allow-Credentials", "true");
 
-        //handling preflight requests
-        if(req.method === "OPTIONS"){
+        // Handle preflight requests
+        if (req.method === "OPTIONS") {
             res.writeHead(204);
             res.end();
             return; 
         }
-    }else{
+    } else {
+        // Log the blocked origin to your terminal for debugging
+        console.log(`BLOCKED CORS ORIGIN: '${origin}'`); 
+        
         const error = new ApiError(403, "Forbidden", ["Origin not allowed"]);
-        return next(error);
+        // In native node, we should end the response here to stop processing
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "CORS Forbidden" }));
+        return;
     }
 
     next();
-}
+};
