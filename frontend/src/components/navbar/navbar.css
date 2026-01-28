@@ -67,6 +67,27 @@
 .hamburger-middle { top: 9px; }
 .hamburger-bottom { top: 18px; }
 
+/* Logout Button Styling */
+.logout-button {
+    background-color: transparent;
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    font-family: var(--font-main);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 0.5rem; /* Space it away from the profile link */
+}
+
+.logout-button:hover {
+    background-color: var(--accent-green);
+    color: var(--secondary-bg); /* Contrast color for text on hover */
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3); /* Soft glow matching your green */
+}
+
 /* Mobile Nav */
 @media (max-width: 768px) {
     .menu-div {
@@ -88,5 +109,13 @@
 
     .hamburger-container {
         display: block;
+    }
+
+    .logout-button {
+        margin: 10px 20px;
+        width: calc(100% - 40px); /* Full width minus padding on mobile */
+        text-align: center;
+        border-color: rgba(255, 255, 255, 0.3);
+        color: var(--text-white);
     }
 }

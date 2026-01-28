@@ -1,42 +1,39 @@
-// src/pages/Login/Login.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/Button/Button';
-import BASE_URL from '../../api/client';
 import './Login.css';
+import { useAuth } from '../../contexts/authContext.jsx';
+import { handleApiError } from '../../utils/errorHandler.js';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const location = useLocation();
+  
+  // Logic to send users back to where they were trying to go (e.g., Delivery page)
+  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/users`);
-      const users = await response.json();
-
-      const user = users.find(u => u.email === email);
-
-      if (user) {
-        // In a real app, we would validate password here using bcrypt or similar
-        // For this mock implementation, we'll accept any password if the user exists
-        console.log('Login successful:', user);
-        // You might want to store user info in context or local storage here
-        localStorage.setItem('user', JSON.stringify(user));
-        navigate('/');
-      } else {
-        setError('Invalid email or password');
-      }
+      // login() here comes from AuthContext, which calls apiService
+      await login(email, password);
+      navigate(from, { replace: true }); 
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Something went wrong. Please try again.');
+      //  IMPROVED: Use your centralized error handler to set the UI error
+      handleApiError(err, setError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -110,6 +107,7 @@ const Login = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
@@ -133,6 +131,7 @@ const Login = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                     <button
                       type="button"
@@ -140,7 +139,7 @@ const Login = () => {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <span className="material-symbols-outlined">
-                        {showPassword ? "visibility_off" : "visibility"}
+                        {showPassword ? "visibility_off" : "visibility"} {/*todo */}
                       </span>
                     </button>
                   </div>
@@ -161,8 +160,8 @@ const Login = () => {
                 </div>
 
                 {/* Login Button */}
-                <Button variant="primary" type="submit" size="large">
-                  Sign In to Gebeta
+                <Button variant="primary" type="submit" size="large" disabled={isSubmitting}>
+                  {isSubmitting ? 'Signing In...' : 'Sign In to Gebeta'}
                 </Button>
               </form>
 
