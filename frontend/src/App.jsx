@@ -3,6 +3,8 @@ import Navbar from './components/navbar/navbar';
 import Footer from './components/footer/footer';
 import './styles/global.css';
 import './styles/variable.css';
+import { AuthProvider } from './contexts/authContext.jsx';
+import ProtectedRoute from './components/protectedRoute.jsx';
 
 // Import pages
 import Home from './pages/Home/Home';
@@ -19,26 +21,34 @@ import ChatWidget from './components/ChatWidget/ChatWidget';
 function Layout() {
   const location = useLocation();
   // Hide header and footer on login page
-  const hideHeaderFooter = location.pathname === '/Login' || location.pathname.startsWith('/Login/');
+  const hideHeaderFooter = location.pathname === '/login' || location.pathname.startsWith('/login/');
 
   return (
     <div className="app">
       {!hideHeaderFooter && <Navbar />}
       <main>
-        <Routes>
+        
+          <Routes>
+          {/** Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+
           <Route path="/about" element={<About />} />
+
+          {/** Protected Routes */}
           <Route path="/delivery" element={<Delivery />} />
           <Route path="/reviews" element={<Reviews />} />
-          <Route path="/customer-review" element={<CustomerReview />} />
-          <Route path="/submit-review" element={<SubmitReview />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/customer-review" element={<ProtectedRoute><CustomerReview /></ProtectedRoute>} />
+          <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
+          
           <Route path="/menu-item" element={<MenuItemDetail />} />
-          <Route path="/profile" element={<UserProfile />} />
-        </Routes>
+          <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          </Routes>
+        
       </main>
       {!hideHeaderFooter && <Footer />}
-      <ChatWidget />
+    
+      {!hideHeaderFooter && <ChatWidget />}
     </div>
   );
 }
@@ -46,7 +56,9 @@ function Layout() {
 function App() {
   return (
     <Router>
-      <Layout />
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
     </Router>
   );
 }
