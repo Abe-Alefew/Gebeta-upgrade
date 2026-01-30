@@ -106,14 +106,19 @@ export const updateApplication = async (req, res) => {
       return res.end(JSON.stringify({ success: false, error: "Application not found" }));
     }
 
-    // Check ownership
-    if (app.owner.toString() !== req.user._id.toString()) {
+    console.log(`[UpdateApp] Request by User: ${req.user._id} Role: ${req.user.role}`);
+    console.log(`[UpdateApp] Target App Owner: ${app.owner}`);
+
+    // Check ownership (bypassed if admin)
+    const isAdmin = ['admin', 'super_admin'].includes(req.user.role);
+    if (!isAdmin && app.owner.toString() !== req.user._id.toString()) {
       res.writeHead(403, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ success: false, error: "Not authorized to update this application" }));
     }
 
-    // Only allow details update if pending or rejected (not approved)
-    if (app.status === 'approved') {
+    // Only allow details update if pending or rejected (not approved) -> Admin can edit approved too maybe?
+    // Let's keep restriction for users. Admin can do whatever.
+    if (!isAdmin && app.status === 'approved') {
       res.writeHead(400, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ success: false, error: "Cannot list edits for approved application. Please update the Business directly." }));
     }
@@ -124,16 +129,20 @@ export const updateApplication = async (req, res) => {
       processedBody.image = processImage(processedBody);
     }
 
-    // If rejected, allow status reset to pending if user updates it? 
-    // Usually yes, or keep it pending. Let's set it to pending on update.
+    let updateData = { ...processedBody };
+
+    // If USER is updating, we reset status to pending (re-submission logic)
+    if (!isAdmin) {
+      updateData.status = 'pending';
+      updateData.reviewedAt = null;
+      updateData.reviewNotes = null;
+    }
+    // If ADMIN is updating, we trust the body (e.g. status='pending' for undo, or just notes)
+    // No automatic resets for admin.
+
     const updatedApp = await Application.findByIdAndUpdate(
       id,
-      {
-        ...processedBody,
-        status: 'pending', // Reset to pending logic usually applies on re-submission
-        reviewedAt: null, // Clear review data
-        reviewNotes: null
-      },
+      updateData,
       { new: true }
     );
 

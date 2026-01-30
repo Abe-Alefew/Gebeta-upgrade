@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
 import BusinessForm from '../../components/BusinessForm/BusinessForm';
-import { businessService, applicationService } from '../../api/apiService';
+import { businessService, applicationService, adminService } from '../../api/apiService';
 import { useAuth } from '../../contexts/authContext';
 import './About.css';
 
@@ -14,6 +14,9 @@ const About = () => {
   const [applications, setApplications] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
 
+  // Admin Stats State
+  const [adminStats, setAdminStats] = useState({ pending: 0, approved: 0, rejected: 0, loading: false });
+
   // Creating state
   const [isCreating, setIsCreating] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -23,11 +26,34 @@ const About = () => {
     if (authLoading) return;
 
     if (user) {
+      if (user.role === 'admin') {
+        fetchAdminStats();
+      }
+      // Admins might also want to see their own applications, keeping existing logic
       fetchMyApplications();
     } else {
       setDataLoading(false);
     }
   }, [user, authLoading]);
+
+  const fetchAdminStats = async () => {
+    try {
+      setAdminStats(prev => ({ ...prev, loading: true }));
+      const response = await adminService.listApplications();
+      // Handle different response structures
+      const data = response.data || response;
+      const allApps = Array.isArray(data) ? data : (data.applications || []);
+
+      const pending = allApps.filter(app => (app.status || 'pending') === 'pending').length;
+      const approved = allApps.filter(app => app.status === 'approved').length;
+      const rejected = allApps.filter(app => app.status === 'rejected').length;
+
+      setAdminStats({ pending, approved, rejected, loading: false });
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      setAdminStats(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   const fetchMyApplications = async () => {
     try {
@@ -169,16 +195,94 @@ const About = () => {
         {user && (
           <section className="dashboard-section" id="business-sec">
             <div className="dashboard-header">
-              <h2 className="section-title">MY APPLICATIONS & BUSINESSES</h2>
+              <h2 className="section-title">
+                {user.role === 'admin' ? 'MY ADMIN DASHBOARD' : 'MY APPLICATIONS & BUSINESSES'}
+              </h2>
 
               <div className="create-btn-container">
-                {!isCreating && (
+                {!isCreating && user.role !== 'admin' && (
                   <Button variant="primary" onClick={handleCreateClick}>
                     <i className="fa-solid fa-plus" style={{ width: '16px' }}></i> Create New Business
                   </Button>
                 )}
+                
               </div>
             </div>
+
+            {/* Admin Stats Section */}
+            {user.role === 'admin' && (
+              <div className="admin-stats-grid">
+                <style>{`
+                  .admin-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                    width: 100%;
+                  }
+                  .stat-card {
+                    background: rgba(10, 11, 30, 0.6);
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                    transition: transform 0.2s;
+                  }
+                  .stat-card:hover {
+                    transform: translateY(-2px);
+                  }
+                  .stat-value {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    margin-bottom: 0.5rem;
+                  }
+                  .stat-label {
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                  }
+                  .color-pending { color: #ffcc00; }
+                  .color-approved { color: #00ff88; }
+                  .color-rejected { color: #ff4d4d; }
+                `}</style>
+
+                <div className="stat-card">
+                  <span className="stat-value color-pending">
+                    {adminStats.loading ? '...' : adminStats.pending}
+                  </span>
+                  <span className="stat-label">
+                    <i className="fa-solid fa-clock color-pending"></i> Pending
+                  </span>
+                </div>
+
+                <div className="stat-card">
+                  <span className="stat-value color-approved">
+                    {adminStats.loading ? '...' : adminStats.approved}
+                  </span>
+                  <span className="stat-label">
+                    <i className="fa-solid fa-check-circle color-approved"></i> Approved
+                  </span>
+                </div>
+
+                <div className="stat-card">
+                  <span className="stat-value color-rejected">
+                    {adminStats.loading ? '...' : adminStats.rejected}
+                  </span>
+                  <span className="stat-label">
+                    <i className="fa-solid fa-circle-xmark color-rejected"></i> Rejected
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Create Form - Always creates new Application */}
             {isCreating && (
@@ -196,11 +300,29 @@ const About = () => {
             {/* Grid */}
             <div className="business-grid">
               {applications.length === 0 && !isCreating ? (
-                <div className="empty-state">
-                  <i className="fa-solid fa-clipboard-list" style={{ width: '16px' }}></i>
-                  <h3>No Applications Yet</h3>
-                  <p>You haven't submitted any applications yet. Click the button above to start!</p>
-                </div>
+                user.role === 'admin' ? (
+                  // Admin View for Empty State - replaced with just dashboard button logic if grid is empty, 
+                  // but user asked to remove empty state.
+                  // However, if we remove empty state, we still need to show SOMETHING if they have no personal applications? 
+                  // Actually, admins might have their own applications too. 
+                  // The instruction says: "Remove Empty State: Remove the "No Applications Yet" placeholder section entirely... In place of the removed elements, add a medium-sized Button component."
+                  // BUT, we already added the button in the header. 
+                  // Let's hide the empty state for admin and show a specialized admin summary or just nothing as requested "Remove ... placeholder section entirely"
+                  // Re-reading: "In place of the removed elements, add a medium-sized Button component." -> This implies the button goes HERE in the grid area if empty.
+                  // AND "Dashboard Button: In place of the removed elements...".
+
+                  <div className="empty-state">
+                    <Button variant="primary" onClick={() => navigate('/approve')} size="medium">
+                      GO TO DASHBOARD
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <i className="fa-solid fa-clipboard-list" style={{ width: '16px' }}></i>
+                    <h3>No Applications Yet</h3>
+                    <p>You haven't submitted any applications yet. Click the button above to start!</p>
+                  </div>
+                )
               ) : (
                 <>
                   {applications.map(app => {
