@@ -32,8 +32,12 @@ import './styles/globals.css';
 
 function Layout() {
   const location = useLocation();
-  // Hide header and footer on login page
-  const hideHeaderFooter = location.pathname === '/login' || location.pathname.startsWith('/login/');
+  // Hide header and footer on login, register, and completeprofile pages
+  const hideHeaderFooter = 
+    location.pathname === '/login' || 
+    location.pathname.startsWith('/login/') ||
+    location.pathname === '/register' ||
+    location.pathname === '/completeprofile';
 
   return (
     <div className="app">
@@ -44,12 +48,13 @@ function Layout() {
           {/** Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-
           <Route path="/about" element={<About />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/completeprofile" element={<CompleteProfile />} />
 
           {/** Protected Routes */}
-          <Route path="/delivery" element={<Delivery />} />
-          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/delivery" element={<ProtectedRoute><Delivery /></ProtectedRoute>} />
+          <Route path="/reviews" element={<ProtectedRoute><Reviews /></ProtectedRoute>} />
           <Route path="/customer-review/:id" element={<ProtectedRoute><CustomerReview /></ProtectedRoute>} />
           <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
 
