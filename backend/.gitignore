@@ -2,3 +2,7 @@
 test-logger.js
 node_modules
 list-models.js
+.env
+node_modules
+../integration_dump.txt
+../project_structure.txt
