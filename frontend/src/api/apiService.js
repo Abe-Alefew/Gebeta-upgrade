@@ -261,8 +261,14 @@ export const adminService = {
     //  Application Management (Admin) 
 
     // List all applications (optional status filter: 'pending', 'approved', 'rejected')
-    listApplications: async (status) => {
-        const query = status ? `?status=${status}` : '';
+    listApplications: async (params) => {
+        let query = '';
+        if (typeof params === 'string') {
+            // Backward compatibility for when it was just (status)
+            query = params ? `?status=${params}` : '';
+        } else if (typeof params === 'object') {
+            query = '?' + new URLSearchParams(params).toString();
+        }
         return apiClient(`/api/applications${query}`, { method: 'GET' });
     },
 
@@ -279,6 +285,14 @@ export const adminService = {
         return apiClient(`/api/applications/${id}/reject`, {
             method: 'PUT',
             body: JSON.stringify({ reviewNotes }),
+        });
+    },
+
+    // Update application (e.g. undo status)
+    updateApplication: async (id, data) => {
+        return apiClient(`/api/applications/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
         });
     },
 };

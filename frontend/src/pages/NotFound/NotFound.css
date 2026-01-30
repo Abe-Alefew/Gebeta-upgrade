@@ -1,0 +1,99 @@
+.not-found-page {
+    min-height: 80vh;
+    /* Occupy most of the screen but leave room for footer if desired, or make it 100vh absolute */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-dark, #0a0b1e);
+    /* Fallback to dark navy */
+    color: var(--text-primary, #ffffff);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.not-found-container {
+    text-align: center;
+    z-index: 10;
+    max-width: 600px;
+    width: 100%;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary, #00ff88), #00cc6a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+    position: relative;
+    display: inline-block;
+}
+
+/* Add a subtle glow/pulse animation */
+.error-code::after {
+    content: '404';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: blur(15px);
+    opacity: 0.5;
+    z-index: -1;
+    animation: pulse 3s infinite alternate;
+}
+
+.not-found-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.not-found-message {
+    font-size: 1.1rem;
+    color: #a0a0b0;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1.05);
+        opacity: 0.7;
+    }
+}
+
+@media (max-width: 768px) {
+    .not-found-container {
+        padding: 2rem;
+    }
+
+    .error-code {
+        font-size: 6rem;
+    }
+
+    .not-found-title {
+        font-size: 1.5rem;
+    }
+}

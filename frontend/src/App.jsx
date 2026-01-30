@@ -23,6 +23,8 @@ import UserProfile from './pages/UserProfile/UserProfile';
 import Register from './pages/Register/Register';
 import CompleteProfile from './pages/CompleteProfile/CompleteProfile';
 import ChatWidget from './components/ChatWidget/ChatWidget';
+import Approve from './pages/Approve/Approve';
+import NotFound from './pages/NotFound/NotFound';
 // import ReviewsDelivery from './pages/ReviewsDelivery/ReviewsDelivery';
 // import NotFound from './pages/NotFound/NotFound';
 
@@ -36,7 +38,8 @@ function Layout() {
     location.pathname === '/login' || 
     location.pathname.startsWith('/login/') ||
     location.pathname === '/register' ||
-    location.pathname === '/completeprofile';
+    location.pathname === '/completeprofile' ||
+    location.pathname === '/not-found'; // Also hide for cleaner 404 if desired, or keep it. Let's keep navbar for 404 usually.
   
 
   return (
@@ -64,11 +67,22 @@ function Layout() {
           <Route path="/menu-item" element={<ProtectedRoute><MenuItemDetail /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           
+          <Route 
+            path="/approve" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <Approve />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="/register" element={<Register />} />
           <Route path="/completeprofile" element={<CompleteProfile />} />
+          
           {/* 404 - Not Found */}
-          {/* <Route path="*" element={<NotFound />} /> */}
-          </Routes>
+          <Route path="/not-found" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
         
       </main>
       {!hideHeaderFooter && <Footer />}

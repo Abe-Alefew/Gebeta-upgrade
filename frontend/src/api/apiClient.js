@@ -44,9 +44,18 @@ export const apiClient = async (endpoint, options = {}) => {
 
         //  Handle other errors using the standardized format from your guide
         if (!response.ok || !data.success) {
+            // Determine error message
+            let errorMessage = 'Request failed';
+            if (data.error) {
+                if (typeof data.error === 'string') errorMessage = data.error;
+                else if (typeof data.error === 'object' && data.error.message) errorMessage = data.error.message;
+            } else if (data.message) {
+                errorMessage = data.message;
+            }
+
             throw new ApiError(
                 response.status,
-                data.error?.message || data.message || 'Request failed',
+                errorMessage,
                 data.error?.details || []
             );
         }
