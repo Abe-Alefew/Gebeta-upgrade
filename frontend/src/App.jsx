@@ -8,7 +8,7 @@ import ProtectedRoute from './components/protectedRoute.jsx';
 
 // Import pages
 import Home from './pages/Home/Home';
-import About from './pages/About/about';
+import About from './pages/About/About.jsx';
 import Delivery from './pages/Delivery/Delivery';
 import Reviews from './pages/Reviews/Reviews';
 import CustomerReview from './pages/CustomerReview/CustomerReview';
@@ -27,8 +27,8 @@ function Layout() {
     <div className="app">
       {!hideHeaderFooter && <Navbar />}
       <main>
-        
-          <Routes>
+
+        <Routes>
           {/** Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -40,14 +40,14 @@ function Layout() {
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/customer-review/:id" element={<ProtectedRoute><CustomerReview /></ProtectedRoute>} />
           <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
-          
+
           <Route path="/menu-item" element={<MenuItemDetail />} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-          </Routes>
-        
+        </Routes>
+
       </main>
       {!hideHeaderFooter && <Footer />}
-    
+
       {!hideHeaderFooter && <ChatWidget />}
     </div>
   );

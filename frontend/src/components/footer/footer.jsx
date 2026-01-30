@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import Button from '../Button/Button';
 import './Footer.css';
 
+import { useAuth } from '../../contexts/authContext';
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { user } = useAuth();
 
   return (
     <footer>
@@ -15,7 +18,7 @@ const Footer = () => {
             Campus Food Discovery Platform for AAU Students
           </p>
         </div>
-        
+
         <div className="footer-col">
           <h4>Gebeta</h4>
           <ul>
@@ -31,7 +34,7 @@ const Footer = () => {
           <p className="small-text">
             Submit Your Details And Get Featured On Our Platform.
           </p>
-          <Link to="/about#business-sec">
+          <Link to={user ? "/about#business-sec" : "/login"}>
             <Button variant="primary" className="script-font">
               Submit Application
             </Button>
@@ -54,7 +57,7 @@ const Footer = () => {
               <i className="fa-brands fa-instagram"></i>
             </a>
           </div>
-          
+
           <div style={{ marginTop: '20px' }}>
             <p className="small-text" style={{ marginBottom: '5px' }}>
               <i className="fa-solid fa-envelope"></i> contact@gebeta.com
@@ -65,7 +68,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="copyright">
         <p>
           &copy; {currentYear} <span className="script-font text-green">Gebeta</span> — Built by Students, for Students.
@@ -77,5 +80,4 @@ const Footer = () => {
     </footer>
   );
 };
-
 export default Footer;
