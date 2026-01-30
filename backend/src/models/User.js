@@ -88,7 +88,6 @@ userSchema.virtual("reviewCount", {
   count: true,
 });
 
-userSchema.index({ email: 1 });
 userSchema.index({ university: 1, dormitory: 1 });
 
 export const User = mongoose.model("User", userSchema);

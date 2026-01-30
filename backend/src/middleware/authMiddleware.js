@@ -15,7 +15,8 @@ export const authMiddleware = async (req,res, next) => {
 
         // verify token
         const decoded = await verifyToken(token);
-        const user = await User.findById(decoded.id || decoded.userId)
+        console.log("DECODED TOKEN(I just put this to see the bug):", decoded); // SEE WHAT KEYS ARE HERE
+        const user = await User.findById(decoded.id || decoded.userId|| decoded._id)
 
         if(!user){
             return next(new ApiError(401, "Not authorized to access this resource", ["User not found"]));

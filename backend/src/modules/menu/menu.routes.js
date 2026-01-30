@@ -7,6 +7,7 @@ export const registerMenuRoutes = (app) => {
   //public routes
   app.get("/api/menu/:businessId", asyncHandler(MenuController.getMenuByBusiness));
   app.get("/api/menu/:businessId/top", asyncHandler(MenuController.getTopItems));
+  app.get("/api/menu/item/:id", asyncHandler(MenuController.getMenuItemById));
 
   //protected routes
   app.post("/api/menu", applyMiddleware(
