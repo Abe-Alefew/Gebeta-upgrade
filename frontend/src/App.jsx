@@ -16,6 +16,8 @@ import SubmitReview from './pages/SubmitReview/SubmitReview';
 import Login from './pages/Login/Login';
 import MenuItemDetail from './pages/MenuItemDetail/MenuItemDetail';
 import UserProfile from './pages/UserProfile/UserProfile';
+import Register from './pages/Register/Register';
+import CompleteProfile from './pages/CompleteProfile/CompleteProfile';
 import ChatWidget from './components/ChatWidget/ChatWidget';
 
 function Layout() {
@@ -43,6 +45,9 @@ function Layout() {
           
           <Route path="/menu-item" element={<MenuItemDetail />} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          
+          <Route path="/register" element={<Register />} />
+          <Route path="/completeprofile" element={<CompleteProfile />} />
           </Routes>
         
       </main>
