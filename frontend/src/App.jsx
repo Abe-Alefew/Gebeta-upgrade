@@ -43,6 +43,7 @@ function Layout() {
 
           <Route path="/menu-item" element={<MenuItemDetail />} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/approve" element={<Approve />} />
         </Routes>
 
       </main>
