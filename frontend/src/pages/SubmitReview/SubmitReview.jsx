@@ -1,366 +1,215 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
-import {
-  businessService,
-  reviewService,
-  authService,
-} from "../../api/apiService"; // NEW API
-import { handleApiError } from "../../utils/errorHandler"; // NEW Error Handler
+import { useLocation, useNavigate } from "react-router-dom";
+import { businessService, reviewService } from "../../api/apiService";
 import Button from "../../components/Button/Button";
 import "./SubmitReview.css";
 
 const SubmitReview = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { business: businessFromState, onReviewSubmit } = location.state || {};
+
+  // 1. Destructure state from navigation
+  const { 
+    business: businessFromState, 
+    menuItem: menuItemFromState, 
+    isMenuReview 
+  } = location.state || {};
+
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [recentReviews, setRecentReviews] = useState([]);
-  const [loading, setLoading] = useState({ reviews: true });
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [hoverRating, setHoverRating] = useState(0);
-  const [businessData, setBusinessData] = useState(null);
-  // const [allData, setAllData] = useState(null); // Keep for reference if needed
+  const [displayData, setDisplayData] = useState(null);
 
-  // ============================================================
-  // ORIGINAL FETCH LOGIC - COMMENTED FOR REFERENCE
-  // ============================================================
-  /*
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/db.json');
-        const data = await response.json();
-        setAllData(data);
-        let businessInfo;
-        if (businessFromState) {
-          businessInfo = businessFromState;
-        } else {
-          const defaultBusiness = data.businesses[0];
-          businessInfo = {
-            id: defaultBusiness.id,
-            name: defaultBusiness.name,
-            image: defaultBusiness.image?.[0]?.url || '...',
-            location: defaultBusiness.location?.address || 'Unknown Location',
-            category: defaultBusiness.category,
-            rating: defaultBusiness.rating?.average || 0,
-            reviews: defaultBusiness.rating?.count || 0
-          };
-        }
-        setBusinessData(businessInfo);
-        const businessReviews = data.reviews
-          .filter(review => review.businessId === businessInfo.id && review.isApproved)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 3);
-        // ... mapping reviews logic
-        setRecentReviews(reviewsWithUsers);
-      } catch (error) { ... }
-    };
-    fetchData();
-  }, [businessFromState]);
-  */
-  // ============================================================
-
-  // NEW BACKEND FETCH LOGIC
   useEffect(() => {
     const fetchBackendData = async () => {
       try {
-        setLoading({ reviews: true });
-
-        // 1. Determine Business ID (from state or URL)
+        setLoading(true);
         const businessId = businessFromState?._id || businessFromState?.id;
 
         if (!businessId) {
-          navigate("/reviews"); // Redirect if no business context
+          navigate("/reviews");
           return;
         }
 
-        // 2. Fetch Business Details and Reviews from MongoDB
         const [busRes, reviewRes] = await Promise.all([
           businessService.getById(businessId),
           reviewService.getByBusinessId(businessId),
         ]);
 
         const bData = busRes.data?.data || busRes.data;
-        const rData = reviewRes.data?.data || reviewRes.data;
+        const allReviews = reviewRes.data?.data || reviewRes.data;
 
-        setBusinessData({
-          ...bData,
-          id: bData._id, // Ensure ID mapping is consistent
-          image: bData.image?.[0]?.url || bData.image || "",
-        });
+        // 2. Set UI Display Context (Menu vs Business)
+        if (isMenuReview && menuItemFromState) {
+          const mId = menuItemFromState.id || menuItemFromState._id;
+          setDisplayData({
+            name: menuItemFromState.itemName || menuItemFromState.name,
+            image: menuItemFromState.image,
+            subtext: `at ${bData.name}`, 
+            businessId: bData._id,
+            menuItemId: mId
+          });
 
-        // 3. Set the 3 most recent reviews
-        setRecentReviews(Array.isArray(rData) ? rData.slice(0, 3) : []);
+          // Filter sidebar for this specific food item
+          const filtered = allReviews
+            .filter(rev => rev.menuItem === mId)
+            .slice(0, 3);
+          setRecentReviews(filtered);
+        } else {
+          setDisplayData({
+            name: bData.name,
+            image: bData.image?.[0]?.url || bData.image || "",
+            subtext: bData.location?.address || bData.location,
+            businessId: bData._id,
+            menuItemId: null
+          });
+          setRecentReviews(Array.isArray(allReviews) ? allReviews.slice(0, 3) : []);
+        }
       } catch (error) {
-        console.error("Backend fetch failed:", error);
-        setMessage({ type: "error", text: "Could not load business details." });
+        console.error("Fetch failed:", error);
+        setMessage({ type: "error", text: "Could not load details." });
       } finally {
-        setLoading({ reviews: false });
+        setLoading(false);
       }
     };
 
     fetchBackendData();
-  }, [businessFromState, navigate]);
-
-  const handleStarClick = (starIndex) => {
-    setRating(starIndex + 1);
-  };
-
-  const handleStarHover = (starIndex) => {
-    setHoverRating(starIndex + 1);
-  };
-
-  const handleStarLeave = () => {
-    setHoverRating(0);
-  };
+  }, [businessFromState, menuItemFromState, isMenuReview, navigate]);
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-
-    if (!rating) {
-      setMessage({ type: "error", text: "Please select a rating" });
-      return;
-    }
-
-    if (!reviewText.trim()) {
-      setMessage({ type: "error", text: "Please write your review" });
-      return;
-    }
-
     setSubmitting(true);
     setMessage({ type: "", text: "" });
 
     try {
-      // ============================================================
-      // NEW POST LOGIC (TO BACKEND)
-      // ============================================================
+      // 3. Match the payload exactly to your Backend Controller
       const reviewPayload = {
         rating: rating,
         body: reviewText,
-        businessId: businessData.id || businessData._id,
+        businessId: displayData.businessId,
+        menuItem: displayData.menuItemId // Will be null if it's a business review
       };
 
-      const response = await reviewService.create(reviewPayload);
-      const savedReview = response.data?.data || response.data;
-
-      // ============================================================
-      // ORIGINAL MOCK LOGIC - COMMENTED FOR REFERENCE
-      // ============================================================
-      /*
-      const newReviewId = `r${Date.now()}`;
-      const currentUser = allData?.users?.[0] || { ... };
-      const newReview = {
-        id: newReviewId,
-        user: { name: currentUser.name, ... },
-        rating: rating,
-        body: reviewText,
-        createdAt: new Date().toISOString()
-      };
-      if (onReviewSubmit) onReviewSubmit(newReview);
-      */
-      // ============================================================
+      await reviewService.create(reviewPayload);
 
       setMessage({
         type: "success",
-        text: "Review submitted successfully! Your feedback helps the campus community.",
+        text: `Successfully reviewed ${displayData.name}!`,
       });
 
-      // Reset form
+      // Clear form and redirect
       setRating(0);
       setReviewText("");
-      setHoverRating(0);
-
-      // Redirect back to business page
       setTimeout(() => {
-        navigate(`/customer-review/${businessData.id || businessData._id}`);
-      }, 2500);
+        navigate(`/customer-review/${displayData.businessId}`);
+      }, 2000);
     } catch (error) {
-      console.error("Error submitting review:", error);
-      // Specifically handle the 400 error (Unique index: one review per user)
-      const errorMsg =
-        error.response?.data?.message ||
-        "Failed to submit review. Have you already reviewed this place?";
+      const errorMsg = error.response?.data?.message || "Failed to submit review.";
       setMessage({ type: "error", text: errorMsg });
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Star rendering logic remains the same (scrolling down to JSX...)
+  // Star Helper
   const renderStars = (count, interactive = false) => {
-    return Array(5)
-      .fill(0)
-      .map((_, index) => {
-        const starValue = index + 1;
-        let starClass = "fa-regular fa-star";
-        if (interactive) {
-          const displayRating = hoverRating || rating;
-          starClass =
-            starValue <= displayRating
-              ? "fa-solid fa-star active"
-              : "fa-regular fa-star";
-        } else {
-          starClass =
-            starValue <= count ? "fa-solid fa-star" : "fa-regular fa-star";
-        }
-        return interactive ? (
-          <i
-            key={index}
-            className={starClass}
-            onClick={() => handleStarClick(index)}
-            onMouseEnter={() => handleStarHover(index)}
-            onMouseLeave={handleStarLeave}
-            style={{
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              transform: hoverRating >= starValue ? "scale(1.2)" : "scale(1)",
-            }}
-          ></i>
-        ) : (
-          <i key={index} className={starClass}></i>
-        );
-      });
+    return Array(5).fill(0).map((_, index) => {
+      const starValue = index + 1;
+      const displayRating = interactive ? (hoverRating || rating) : count;
+      const isFull = starValue <= displayRating;
+      
+      return (
+        <i
+          key={index}
+          className={isFull ? "fa-solid fa-star active" : "fa-regular fa-star"}
+          onClick={interactive ? () => setRating(starValue) : null}
+          onMouseEnter={interactive ? () => setHoverRating(starValue) : null}
+          onMouseLeave={interactive ? () => setHoverRating(0) : null}
+          style={{ cursor: interactive ? "pointer" : "default" }}
+        ></i>
+      );
+    });
   };
 
-  if (!businessData && !message.text) {
-    return (
-      <main>
-        <div className="submit-review-container">
-          <div className="loading">
-            <p>Loading...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  if (loading) return <div className="loading-container"><div className="spinner"></div><p>Loading...</p></div>;
 
   return (
     <main>
       <div className="submit-review-container">
         <div className="submit-form-area">
           <div className="place-info">
-            <img
-              src={businessData?.image}
-              alt={businessData?.name}
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/150";
-              }}
+            <img 
+              src={displayData?.image} 
+              alt={displayData?.name} 
+              onError={(e) => e.target.src = "https://via.placeholder.com/150"}
             />
             <div className="cafeteriaDescription">
-              <h3 style={{ margin: 0, fontFamily: "var(--font-heading)" }}>
-                {businessData?.name}
-              </h3>
-              <p style={{ color: "var(--text-grey)", margin: 0 }}>
-                {businessData?.location?.address || businessData?.location}
-              </p>
+              <h3 style={{ margin: 0, fontFamily: "var(--font-heading)" }}>{displayData?.name}</h3>
+              <p style={{ color: "var(--accent-green)", fontWeight: "bold", margin: 0 }}>{displayData?.subtext}</p>
             </div>
           </div>
+          
           <hr className="divider" />
-          <h3
-            style={{ fontFamily: "var(--font-heading)", marginBottom: "15px" }}
-          >
-            How would you rate your experience?
+          
+          <h3 style={{ fontFamily: "var(--font-heading)", marginBottom: "15px" }}>
+            How was the {isMenuReview ? 'food' : 'service'}?
           </h3>
+          
           <div className="rating-select">
             {renderStars(0, true)}
             <span style={{ fontSize: "1rem", marginLeft: "15px" }}>
-              {rating ? `${rating} out of 5` : "SELECT YOUR RATING"}
+              {rating ? `${rating} out of 5` : "SELECT RATING"}
             </span>
           </div>
-          <p style={{ fontWeight: "bold", marginBottom: "10px" }}>
-            TELL US ABOUT YOUR EXPERIENCE
-          </p>
+
           <div className="form-group">
             <textarea
-              placeholder="Share details..."
+              placeholder="What did you like or dislike? Help other students!"
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              rows="8"
-              maxLength="500"
+              rows="6"
             ></textarea>
-            <div
-              style={{
-                textAlign: "right",
-                fontSize: "0.8rem",
-                color: "var(--text-grey)",
-                marginTop: "5px",
-              }}
-            >
-              {reviewText.length}/500 characters
-            </div>
           </div>
 
           {message.text && (
-            <div
-              className={`message ${message.type}`}
-              style={{
-                padding: "15px",
-                margin: "20px 0",
-                borderRadius: "10px",
-                backgroundColor:
-                  message.type === "success"
-                    ? "rgba(57, 255, 20, 0.1)"
-                    : "rgba(255, 107, 107, 0.1)",
-                color:
-                  message.type === "success"
-                    ? "var(--accent-green)"
-                    : "#ff6b6b",
+            <div className={`message ${message.type}`} style={{
+                padding: "10px", margin: "10px 0", borderRadius: "8px",
+                backgroundColor: message.type === "success" ? "rgba(57, 255, 20, 0.1)" : "rgba(255, 107, 107, 0.1)",
+                color: message.type === "success" ? "var(--accent-green)" : "#ff6b6b",
                 border: `1px solid ${message.type === "success" ? "var(--accent-green)" : "#ff6b6b"}`,
-                textAlign: "center",
-              }}
-            >
+                textAlign: "center"
+            }}>
               {message.text}
             </div>
           )}
 
-          <Button
-            variant="primary"
-            size="large"
-            disabled={submitting || !rating || !reviewText.trim()}
-            onClick={handleSubmitReview}
-          >
-            {submitting ? "Submitting..." : "Post"}
+          <Button variant="primary" size="large" disabled={submitting || !rating || !reviewText.trim()} onClick={handleSubmitReview}>
+            {submitting ? "Submitting..." : "Post Review"}
           </Button>
         </div>
 
         <div className="recent-reviews-area">
-          <h2 className="section-title" style={{ fontSize: "1.8rem" }}>
-            Recent Reviews
-          </h2>
+          <h2 className="section-title">Recent Reviews</h2>
           <hr className="divider" />
-          {loading.reviews ? (
-            <p>Loading...</p>
-          ) : recentReviews.length > 0 ? (
+          {recentReviews.length > 0 ? (
             recentReviews.map((review) => (
-              <div
-                className="review-item"
-                key={review._id}
-                style={{ marginBottom: "20px" }}
-              >
+              <div className="review-item" key={review._id}>
                 <div className="review-header">
-                  <img
-                    className="reviewer-img"
-                    src={review.user?.avatar || ""}
-                    alt="User"
-                  />
+                  <img className="reviewer-img" src={review.user?.avatar || "https://via.placeholder.com/40"} alt="User" />
                   <div className="reviewer-info">
-                    <h4>{review.user?.name || "Anonymous"}</h4>
-                    <p>{review.user?.dormitory || "Student"}</p>
-                    <div
-                      className="rating-stars"
-                      style={{ fontSize: "0.8rem", margin: 0 }}
-                    >
-                      {renderStars(review.rating)}
-                    </div>
+                    <h4>{review.user?.name || "Student"}</h4>
+                    <div className="rating-stars">{renderStars(review.rating)}</div>
                   </div>
                 </div>
                 <p className="review-body">{review.body}</p>
               </div>
             ))
           ) : (
-            <p>No reviews yet.</p>
+            <p>Be the first to review this {isMenuReview ? 'item' : 'place'}!</p>
           )}
         </div>
       </div>
@@ -369,438 +218,3 @@ const SubmitReview = () => {
 };
 
 export default SubmitReview;
-
-
-//the following code is the one used when working with the json-server (before backend nte)
-// import React, { useState, useEffect } from 'react';
-// import { useLocation, useNavigate, Link } from 'react-router-dom';
-// import Button from '../../components/Button/Button';
-// import './SubmitReview.css';
-
-// const SubmitReview = () => {
-//   const location = useLocation();
-//   const navigate = useNavigate();
-//   const { business: businessFromState, onReviewSubmit } = location.state || {};
-//   const [rating, setRating] = useState(0);
-//   const [reviewText, setReviewText] = useState('');
-//   const [recentReviews, setRecentReviews] = useState([]);
-//   const [loading, setLoading] = useState({ reviews: true });
-//   const [submitting, setSubmitting] = useState(false);
-//   const [message, setMessage] = useState({ type: '', text: '' });
-//   const [hoverRating, setHoverRating] = useState(0);
-//   const [businessData, setBusinessData] = useState(null);
-//   const [allData, setAllData] = useState(null);
-
-//   // Fetch all data from db.json
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const response = await fetch('/db.json');
-//         const data = await response.json();
-//         setAllData(data);
-
-//         // Get business data
-//         let businessInfo;
-//         if (businessFromState) {
-//           businessInfo = businessFromState;
-//         } else {
-//           // Get first business from db.json as default
-//           const defaultBusiness = data.businesses[0];
-//           businessInfo = {
-//             id: defaultBusiness.id,
-//             name: defaultBusiness.name,
-//             image: defaultBusiness.image?.[0]?.url || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop',
-//             location: defaultBusiness.location?.address || 'Unknown Location',
-//             category: defaultBusiness.category,
-//             rating: defaultBusiness.rating?.average || 0,
-//             reviews: defaultBusiness.rating?.count || 0
-//           };
-//         }
-//         setBusinessData(businessInfo);
-
-//         // Get recent reviews for this business
-//         const businessReviews = data.reviews
-//           .filter(review => review.businessId === businessInfo.id && review.isApproved)
-//           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-//           .slice(0, 3);
-
-//         // Add user info to reviews
-//         const reviewsWithUsers = businessReviews.map(review => {
-//           const user = data.users.find(u => u.id === review.userId) || {
-//             name: 'Anonymous',
-//             avatar: 'https://i.pravatar.cc/150?img=0',
-//             university: 'AAU',
-//             dormitory: 'Unknown'
-//           };
-
-//           return {
-//             id: review.id,
-//             user: {
-//               name: user.name,
-//               avatar: user.avatar,
-//               university: `${user.dormitory}, ${user.university}`
-//             },
-//             rating: review.rating,
-//             body: review.body,
-//             createdAt: review.createdAt
-//           };
-//         });
-
-//         setRecentReviews(reviewsWithUsers);
-
-//       } catch (error) {
-//         console.error('Error fetching data:', error);
-//         // Fallback data
-//         setBusinessData({
-//           id: 'b1',
-//           name: 'STUDENT CENTER CAFETERIA',
-//           image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop',
-//           location: '5K DORMITORY',
-//           category: 'on-campus',
-//           rating: 4.5,
-//           reviews: 234
-//         });
-
-//         setRecentReviews([
-//           {
-//             id: 'r1',
-//             user: {
-//               name: 'SELAM TADESSE',
-//               university: '6K, AAU',
-//               avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx2aXN1YWwtc2VhcmNofDF8fHxlbnwwfHx8fHw%3D'
-//             },
-//             rating: 5,
-//             body: 'I had an amazing experience at this restaurant! The place was clean, beautifully decorated, and the staff were incredibly polite. I ordered the beef tibs with injera, and it...',
-//             createdAt: '2026-01-18T10:30:00Z'
-//           },
-//           {
-//             id: 'r2',
-//             user: {
-//               name: 'MIHIRET ADMASU',
-//               university: '5K, AAU',
-//               avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop'
-//             },
-//             rating: 4,
-//             body: 'Great food quality and reasonable prices. The service could be faster during peak hours though.',
-//             createdAt: '2026-01-17T14:20:00Z'
-//           }
-//         ]);
-//       } finally {
-//         setLoading(prev => ({ ...prev, reviews: false }));
-//       }
-//     };
-
-//     fetchData();
-//   }, [businessFromState]);
-
-//   const handleStarClick = (starIndex) => {
-//     setRating(starIndex + 1);
-//   };
-
-//   const handleStarHover = (starIndex) => {
-//     setHoverRating(starIndex + 1);
-//   };
-
-//   const handleStarLeave = () => {
-//     setHoverRating(0);
-//   };
-
-//   const handleSubmitReview = async (e) => {
-//     e.preventDefault();
-
-//     if (!rating) {
-//       setMessage({ type: 'error', text: 'Please select a rating' });
-//       return;
-//     }
-
-//     if (!reviewText.trim()) {
-//       setMessage({ type: 'error', text: 'Please write your review' });
-//       return;
-//     }
-
-//     if (!businessData) {
-//       setMessage({ type: 'error', text: 'Error loading business data' });
-//       return;
-//     }
-
-//     setSubmitting(true);
-//     setMessage({ type: '', text: '' });
-
-//     try {
-//       // Create new review
-//       const newReviewId = `r${Date.now()}`;
-//       const currentUser = allData?.users?.[0] || {
-//         id: 'u1',
-//         name: 'You',
-//         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop',
-//         university: 'AAU',
-//         dormitory: '5K',
-//         yearOfStudy: 'Student'
-//       };
-
-//       const newReview = {
-//         id: newReviewId,
-//         user: {
-//           name: currentUser.name,
-//           avatar: currentUser.avatar,
-//           university: `${currentUser.dormitory || ''}, ${currentUser.university || 'AAU'}`
-//         },
-//         rating: rating,
-//         body: reviewText,
-//         createdAt: new Date().toISOString()
-//       };
-
-//       // Call the callback function if provided
-//       if (onReviewSubmit) {
-//         onReviewSubmit(newReview);
-//       }
-
-//       setMessage({
-//         type: 'success',
-//         text: 'Review submitted successfully! Thank you for your feedback.'
-//       });
-
-//       // Reset form
-//       setRating(0);
-//       setReviewText('');
-//       setHoverRating(0);
-
-//       // Add the new review to recent reviews
-//       setRecentReviews(prev => [newReview, ...prev.slice(0, 2)]);
-
-//       // Redirect back to business page after 2 seconds
-//       setTimeout(() => {
-//         navigate(`/customer-review`, {
-//           state: {
-//             business: businessData,
-//             scrollToReviews: true
-//           }
-//         });
-//       }, 2000);
-
-//     } catch (error) {
-//       console.error('Error submitting review:', error);
-//       setMessage({
-//         type: 'error',
-//         text: 'Failed to submit review. Please try again.'
-//       });
-//     } finally {
-//       setSubmitting(false);
-//     }
-//   };
-
-//   const renderStars = (count, interactive = false) => {
-//     return Array(5).fill(0).map((_, index) => {
-//       const starValue = index + 1;
-//       let starClass = 'fa-regular fa-star';
-
-//       if (interactive) {
-//         const displayRating = hoverRating || rating;
-//         starClass = starValue <= displayRating ? 'fa-solid fa-star active' : 'fa-regular fa-star';
-//       } else {
-//         starClass = starValue <= count ? 'fa-solid fa-star' : 'fa-regular fa-star';
-//       }
-
-//       return interactive ? (
-//         <i
-//           key={index}
-//           className={starClass}
-//           onClick={() => handleStarClick(index)}
-//           onMouseEnter={() => handleStarHover(index)}
-//           onMouseLeave={handleStarLeave}
-//           style={{
-//             cursor: 'pointer',
-//             transition: 'all 0.2s ease',
-//             transform: hoverRating >= starValue ? 'scale(1.2)' : 'scale(1)'
-//           }}
-//         ></i>
-//       ) : (
-//         <i key={index} className={starClass}></i>
-//       );
-//     });
-//   };
-
-//   if (!businessData) {
-//     return (
-//       <main>
-//         <div className="submit-review-container">
-//           <div className="loading">
-//             <p>Loading...</p>
-//           </div>
-//         </div>
-//       </main>
-//     );
-//   }
-
-//   return (
-//     <main>
-//       <div className="submit-review-container">
-//         {/* Submit Form Area */}
-//         <div className="submit-form-area">
-//           <div className="place-info">
-//             <img
-//               src={businessData.image}
-//               alt={businessData.name}
-//               onError={(e) => {
-//                 e.target.onerror = null;
-//                 e.target.src = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop';
-//               }}
-//             />
-//             <div className="cafeteriaDescription">
-//               <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)' }}>
-//                 {businessData.name}
-//               </h3>
-//               <p style={{ color: 'var(--text-grey)', margin: 0 }}>
-//                 {businessData.location}
-//               </p>
-//             </div>
-//           </div>
-
-//           <hr className="divider" />
-
-//           <h3 style={{ fontFamily: 'var(--font-heading)', marginBottom: '15px' }}>
-//             How would you rate your experience?
-//           </h3>
-
-//           <div className="rating-select">
-//             {renderStars(0, true)}
-//             <span style={{ fontSize: '1rem', marginLeft: '15px' }}>
-//               {rating ? `${rating} out of 5` : 'SELECT YOUR RATING'}
-//             </span>
-//           </div>
-
-//           <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
-//             TELL US ABOUT YOUR EXPERIENCE
-//           </p>
-
-//           <div className="form-group">
-//             <textarea
-//               name="experience"
-//               id="experience"
-//               placeholder="Share details about your experience, food quality, service, atmosphere..."
-//               value={reviewText}
-//               onChange={(e) => setReviewText(e.target.value)}
-//               rows="8"
-//               maxLength="500"
-//             ></textarea>
-//             <div style={{
-//               textAlign: 'right',
-//               fontSize: '0.8rem',
-//               color: 'var(--text-grey)',
-//               marginTop: '5px'
-//             }}>
-//               {reviewText.length}/500 characters
-//             </div>
-//           </div>
-
-//           {/* Message Display */}
-//           {message.text && (
-//             <div className={`message ${message.type}`} style={{
-//               padding: '15px',
-//               margin: '20px 0',
-//               borderRadius: '10px',
-//               backgroundColor: message.type === 'success'
-//                 ? 'rgba(57, 255, 20, 0.1)'
-//                 : 'rgba(255, 107, 107, 0.1)',
-//               color: message.type === 'success'
-//                 ? 'var(--accent-green)'
-//                 : '#ff6b6b',
-//               border: `1px solid ${message.type === 'success'
-//                 ? 'var(--accent-green)'
-//                 : '#ff6b6b'}`,
-//               textAlign: 'center'
-//             }}>
-//               {message.text}
-//               {message.type === 'success' && (
-//                 <div style={{ marginTop: '10px', fontSize: '0.9rem' }}>
-//                   Redirecting back to {businessData.name}...
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           <Button
-//             variant="primary"
-//             size="large"
-//             disabled={submitting || !rating || !reviewText.trim()}
-//             onClick={handleSubmitReview}
-//           >
-//             {submitting ? (
-//               <>
-//                 <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
-//                 Submitting...
-//               </>
-//             ) : (
-//               'Post'
-//             )}
-//           </Button>
-
-//         </div>
-
-//         {/* Recent Reviews Area */}
-//         <div className="recent-reviews-area">
-//           <h2 className="section-title" style={{ fontSize: '1.8rem' }}>
-//             Recent Reviews
-//           </h2>
-//           <hr className="divider" />
-
-//           {loading.reviews ? (
-//             <div className="loading-small">
-//               <p>Loading recent reviews...</p>
-//             </div>
-//           ) : recentReviews.length > 0 ? (
-//             recentReviews.map((review) => (
-//               <div className="review-item" key={review.id} style={{ marginBottom: '20px' }}>
-//                 <div className="review-header">
-//                   <img
-//                     className="reviewer-img"
-//                     src={review.user?.avatar}
-//                     alt={review.user?.name}
-//                     onError={(e) => {
-//                       e.target.onerror = null;
-//                       e.target.src = 'https://i.pravatar.cc/150?img=0';
-//                     }}
-//                   />
-//                   <div className="reviewer-info">
-//                     <h4>{review.user?.name}</h4>
-//                     <p>{review.user?.university || ''}</p>
-//                     <div className="rating-stars" style={{ fontSize: '0.8rem', margin: 0 }}>
-//                       {renderStars(review.rating)}
-//                     </div>
-//                   </div>
-//                 </div>
-//                 <p className="review-body">
-//                   {review.body.length > 150
-//                     ? `${review.body.substring(0, 150)}...`
-//                     : review.body}
-//                 </p>
-//                 {review.body.length > 150 && (
-//                   <Link to={`/customer-review`} state={{ business: businessData }}>
-//                     <Button variant="outline" size="small">
-//                       READ MORE
-//                     </Button>
-//                   </Link>
-//                 )}
-//               </div>
-//             ))
-//           ) : (
-//             <p style={{ color: 'var(--text-grey)', textAlign: 'center', padding: '20px' }}>
-//               No reviews yet. Be the first to review!
-//             </p>
-//           )}
-
-//           {/* View All Reviews Button */}
-//           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-//             <Link to={`/customer-review`} state={{ business: businessData }}>
-//               <Button variant="outline">
-//                 View All Reviews
-//               </Button>
-//             </Link>
-//           </div>
-//         </div>
-//       </div>
-//     </main>
-//   );
-// };
-
-// export default SubmitReview;
