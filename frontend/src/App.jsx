@@ -38,7 +38,7 @@ function Layout() {
           {/** Protected Routes */}
           <Route path="/delivery" element={<Delivery />} />
           <Route path="/reviews" element={<Reviews />} />
-          <Route path="/customer-review" element={<ProtectedRoute><CustomerReview /></ProtectedRoute>} />
+          <Route path="/customer-review/:id" element={<ProtectedRoute><CustomerReview /></ProtectedRoute>} />
           <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
           
           <Route path="/menu-item" element={<MenuItemDetail />} />

@@ -38,14 +38,19 @@ export const getAll = async (req, res) => {
     const total = await Business.countDocuments(query);
 
     // Use standardized ApiResponse format
-    const response = new ApiResponse(200, businesses, "Businesses fetched successfully", {
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit),
-      }
-    });
+    const response = new ApiResponse(
+      200,
+      businesses,
+      "Businesses fetched successfully",
+      {
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      },
+    );
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(response));
@@ -66,14 +71,22 @@ export const getById = async (req, res) => {
       return res.end(JSON.stringify({ error: "Invalid ID format" }));
     }
     // .populate('reviews') can be added later once reviews are built
-    const business = await Business.findById(id);
+    const business = await Business.findById(id)
+      .populate("menuItems")
+      .populate("owner", "name");
 
     if (!business) {
       res.writeHead(404, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ success: false, message: "Business not found" }));
+      return res.end(
+        JSON.stringify({ success: false, message: "Business not found" }),
+      );
     }
 
-    const response = new ApiResponse(200, business, "Business fetched successfully");
+    const response = new ApiResponse(
+      200,
+      business,
+      "Business fetched successfully",
+    );
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(response));
   } catch (err) {
@@ -91,12 +104,18 @@ export const getFeatured = async (req, res) => {
       .sort({ "rating.average": -1 })
       .limit(5);
 
-    const response = new ApiResponse(200, featured, "Featured businesses fetched successfully");
+    const response = new ApiResponse(
+      200,
+      featured,
+      "Featured businesses fetched successfully",
+    );
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(response));
   } catch (err) {
     res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ success: false, error: "Failed to fetch featured" }));
+    res.end(
+      JSON.stringify({ success: false, error: "Failed to fetch featured" }),
+    );
   }
 };
 
@@ -107,7 +126,11 @@ export const getByCategory = async (req, res) => {
     const { category } = req.params;
     const businesses = await Business.find({ category });
 
-    const response = new ApiResponse(200, businesses, "Businesses by category fetched successfully");
+    const response = new ApiResponse(
+      200,
+      businesses,
+      "Businesses by category fetched successfully",
+    );
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(response));
   } catch (err) {
@@ -150,7 +173,11 @@ export const update = async (req, res) => {
     const data = req.body;
     const updated = await Business.findByIdAndUpdate(id, data, { new: true });
 
-    const response = new ApiResponse(200, updated, "Business updated successfully");
+    const response = new ApiResponse(
+      200,
+      updated,
+      "Business updated successfully",
+    );
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(response));
   } catch (err) {
@@ -165,7 +192,11 @@ export const remove = async (req, res) => {
     const { id } = req.params;
     const deleted = await Business.findByIdAndDelete(id);
 
-    const response = new ApiResponse(200, { deleted: true }, "Business deleted successfully");
+    const response = new ApiResponse(
+      200,
+      { deleted: true },
+      "Business deleted successfully",
+    );
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(response));
   } catch (err) {
