@@ -1,83 +1,189 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
+import BusinessForm from '../../components/BusinessForm/BusinessForm';
+import { businessService, applicationService, adminService } from '../../api/apiService';
+import { useAuth } from '../../contexts/authContext';
 import './About.css';
 
 const About = () => {
-  const [formData, setFormData] = useState({
-    businessName: '',
-    location: '',
-    description: ''
-  });
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  // Store APPLICATIONS
+  const [applications, setApplications] = useState([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      // Submit to JSON Server API
-      const response = await fetch('http://localhost:3000/applications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          date: new Date().toISOString(),
-          status: 'pending'
-        }),
-      });
+  // Admin Stats State
+  const [adminStats, setAdminStats] = useState({ pending: 0, approved: 0, rejected: 0, loading: false });
 
-      if (response.ok) {
-        alert('Thank you! Your business application has been submitted.');
-        setFormData({
-          businessName: '',
-          location: '',
-          description: ''
-        });
-      } else {
-        alert('There was an error submitting your application. Please try again.');
+  // Creating state
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  // Fetch only when auth is ready and user is present
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (user) {
+      if (user.role === 'admin') {
+        fetchAdminStats();
       }
+      // Admins might also want to see their own applications, keeping existing logic
+      fetchMyApplications();
+    } else {
+      setDataLoading(false);
+    }
+  }, [user, authLoading]);
+
+  const fetchAdminStats = async () => {
+    try {
+      setAdminStats(prev => ({ ...prev, loading: true }));
+      const response = await adminService.listApplications();
+      // Handle different response structures
+      const data = response.data || response;
+      const allApps = Array.isArray(data) ? data : (data.applications || []);
+
+      const pending = allApps.filter(app => (app.status || 'pending') === 'pending').length;
+      const approved = allApps.filter(app => app.status === 'approved').length;
+      const rejected = allApps.filter(app => app.status === 'rejected').length;
+
+      setAdminStats({ pending, approved, rejected, loading: false });
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('There was an error submitting your application. Please try again.');
+      console.error('Error fetching admin stats:', error);
+      setAdminStats(prev => ({ ...prev, loading: false }));
     }
   };
+
+  const fetchMyApplications = async () => {
+    try {
+      setDataLoading(true);
+      console.log('Fetching applications for user:', user?._id);
+      const response = await applicationService.getMyApplications();
+
+      if (response.success && response.data) {
+        console.log('Fetched applications:', response.data.length);
+        setApplications(response.data);
+      } else {
+        console.log('No applications found or api error', response);
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      // If error is 401, apiClient usually redirects.
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleCreateClick = () => {
+    // Button Guard
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    setIsCreating(true);
+  };
+
+  const handleCreateSubmit = async (formData) => {
+    if (!user) return;
+    try {
+      const payload = {
+        ...formData,
+        location: typeof formData.location === 'object' ? formData.location.address : formData.location
+      };
+
+      await applicationService.submit(payload);
+      alert('Application submitted successfully! Your business is pending approval.');
+      setIsCreating(false);
+      fetchMyApplications();
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      alert(error.message || 'Failed to submit application');
+    }
+  };
+
+  const handleUpdateSubmit = async (id, formData, type) => {
+    try {
+      if (type === 'business') {
+        // Live business update
+        await businessService.update(id, formData);
+        alert('Live business updated successfully!');
+      } else {
+        // Application update (pending/rejected)
+        const payload = {
+          ...formData,
+          location: typeof formData.location === 'object' ? formData.location.address : formData.location
+        };
+        await applicationService.update(id, payload);
+        alert('Application updated successfully!');
+      }
+
+      setEditingItem(null);
+      fetchMyApplications(); // Refresh list
+    } catch (error) {
+      console.error('Error updating:', error);
+      alert(error.message || 'Failed to update');
+    }
+  };
+
+  const handleDelete = async (id, name, type) => {
+    if (type !== 'business') {
+      alert('You can only delete approved businesses. Contact support to cancel applications.');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone."`)) {
+      return;
+    }
+
+    try {
+      await businessService.delete(id);
+      alert('Business deleted successfully.');
+      fetchMyApplications();
+    } catch (error) {
+      console.error('Error deleting business:', error);
+      alert('Failed to delete business. Please try again.');
+    }
+  };
+
+  // Combined loading state for initial load
+  if (authLoading || (user && dataLoading && applications.length === 0 && !isCreating)) {
+    return (
+      <div className="about-page">
+        <main>
+          <div style={{ textAlign: 'center', padding: '60px' }}>
+            <div className="spinner" style={{ margin: '0 auto' }}></div>
+            <p>Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="about-page">
       <main>
+        {/* Intro Section */}
         <section className="about-section">
           <div className="about-text">
             <h1>ABOUT <span className="script-font text-green">Gebeta</span><br />REVIEW</h1>
-
             <p>
               <span className="script-font text-green">Gebeta</span> is a student-powered food discovery and review
               platform built to help university students find the best meals on and around campus.
-            </p>
-            <p>
-              We make it easy to explore cafeterias, nearby restaurants, and student-run delivery services — all
-              in one organized hub.
             </p>
           </div>
 
           <div className="about-gallery">
             <div className="gallery-item large"
-              style={{backgroundImage: "url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600')"}}>
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600')" }}>
               <span className="gallery-label">OFF-CAMPUS</span>
             </div>
             <div className="gallery-item"
-              style={{backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=300')"}}>
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=300')" }}>
               <span className="gallery-label">ON-CAMPUS</span>
             </div>
             <div className="gallery-item wide"
-              style={{backgroundImage: "url('https://images.unsplash.com/photo-1695654390723-479197a8c4a3?q=80&w=1434&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}}>
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1695654390723-479197a8c4a3?q=80&w=1434&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
               <span className="gallery-label">DELIVERY</span>
             </div>
           </div>
@@ -85,51 +191,264 @@ const About = () => {
 
         <hr className="divider" />
 
-        <section className="form-section" id="business-sec">
-          <h2 className="section-title text-center">LIST YOUR BUSINESS</h2>
+        {/* Dashboard Section - Only if user is defined */}
+        {user && (
+          <section className="dashboard-section" id="business-sec">
+            <div className="dashboard-header">
+              <h2 className="section-title">
+                {user.role === 'admin' ? 'MY ADMIN DASHBOARD' : 'MY APPLICATIONS & BUSINESSES'}
+              </h2>
 
-          <div className="form-card">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>BUSINESS NAME</label>
-                <input 
-                  type="text" 
-                  name="businessName"
-                  placeholder="" 
-                  required
-                  value={formData.businessName}
-                  onChange={handleChange}
+              <div className="create-btn-container">
+                {!isCreating && user.role !== 'admin' && (
+                  <Button variant="primary" onClick={handleCreateClick}>
+                    <i className="fa-solid fa-plus" style={{ width: '16px' }}></i> Create New Business
+                  </Button>
+                )}
+                
+              </div>
+            </div>
+
+            {/* Admin Stats Section */}
+            {user.role === 'admin' && (
+              <div className="admin-stats-grid">
+                <style>{`
+                  .admin-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                    width: 100%;
+                  }
+                  .stat-card {
+                    background: rgba(10, 11, 30, 0.6);
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                    transition: transform 0.2s;
+                  }
+                  .stat-card:hover {
+                    transform: translateY(-2px);
+                  }
+                  .stat-value {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    margin-bottom: 0.5rem;
+                  }
+                  .stat-label {
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                  }
+                  .color-pending { color: #ffcc00; }
+                  .color-approved { color: #00ff88; }
+                  .color-rejected { color: #ff4d4d; }
+                `}</style>
+
+                <div className="stat-card">
+                  <span className="stat-value color-pending">
+                    {adminStats.loading ? '...' : adminStats.pending}
+                  </span>
+                  <span className="stat-label">
+                    <i className="fa-solid fa-clock color-pending"></i> Pending
+                  </span>
+                </div>
+
+                <div className="stat-card">
+                  <span className="stat-value color-approved">
+                    {adminStats.loading ? '...' : adminStats.approved}
+                  </span>
+                  <span className="stat-label">
+                    <i className="fa-solid fa-check-circle color-approved"></i> Approved
+                  </span>
+                </div>
+
+                <div className="stat-card">
+                  <span className="stat-value color-rejected">
+                    {adminStats.loading ? '...' : adminStats.rejected}
+                  </span>
+                  <span className="stat-label">
+                    <i className="fa-solid fa-circle-xmark color-rejected"></i> Rejected
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Create Form - Always creates new Application */}
+            {isCreating && (
+              <div className="create-form-section">
+                <h3 style={{ marginBottom: '20px', color: 'var(--text-white)' }}>List Your Business</h3>
+                <p style={{ color: '#aaa', marginBottom: '20px' }}>Submit your business details for admin approval.</p>
+                <BusinessForm
+                  onSubmit={handleCreateSubmit}
+                  onCancel={() => setIsCreating(false)}
+                  isEditing={false}
                 />
               </div>
+            )}
 
-              <div className="form-group">
-                <label>LOCATION</label>
-                <input 
-                  type="text" 
-                  name="location"
-                  placeholder="" 
-                  required
-                  value={formData.location}
-                  onChange={handleChange}
-                />
-              </div>
+            {/* Grid */}
+            <div className="business-grid">
+              {applications.length === 0 && !isCreating ? (
+                user.role === 'admin' ? (
+                  // Admin View for Empty State - replaced with just dashboard button logic if grid is empty, 
+                  // but user asked to remove empty state.
+                  // However, if we remove empty state, we still need to show SOMETHING if they have no personal applications? 
+                  // Actually, admins might have their own applications too. 
+                  // The instruction says: "Remove Empty State: Remove the "No Applications Yet" placeholder section entirely... In place of the removed elements, add a medium-sized Button component."
+                  // BUT, we already added the button in the header. 
+                  // Let's hide the empty state for admin and show a specialized admin summary or just nothing as requested "Remove ... placeholder section entirely"
+                  // Re-reading: "In place of the removed elements, add a medium-sized Button component." -> This implies the button goes HERE in the grid area if empty.
+                  // AND "Dashboard Button: In place of the removed elements...".
 
-              <div className="form-group">
-                <label>DESCRIPTION</label>
-                <textarea 
-                  rows="5"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                ></textarea>
-              </div>
+                  <div className="empty-state">
+                    <Button variant="primary" onClick={() => navigate('/approve')} size="medium">
+                      GO TO DASHBOARD
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <i className="fa-solid fa-clipboard-list" style={{ width: '16px' }}></i>
+                    <h3>No Applications Yet</h3>
+                    <p>You haven't submitted any applications yet. Click the button above to start!</p>
+                  </div>
+                )
+              ) : (
+                <>
+                  {applications.map(app => {
+                    // Determine if we are showing the live business or the application
+                    const isLive = app.status === 'approved';
+                    // If live, use the populated businessId object if available, otherwise fallback to app details
+                    // Note: backend 'getMyApplications' populates 'businessId'.
+                    const businessData = isLive && app.businessId ? app.businessId : app;
+                    const displayId = isLive && app.businessId ? app.businessId._id : app._id;
+                    const cardType = isLive ? 'business' : 'application';
 
-              <Button variant="primary" type="submit" style={{display: 'block', marginLeft: 'auto', marginRight: 'auto'}}>
-                Submit
-              </Button>
-            </form>
-          </div>
-        </section>
+                    // For editing state check
+                    const isEditingThis = editingItem && editingItem.id === displayId;
+
+                    return (
+                      <div key={app._id} className={`business-card ${!isLive ? 'application-card-style' : ''}`}>
+                        {/* Image Section */}
+                        <div className="card-image-container">
+                          {businessData.image && businessData.image.length > 0 ? (
+                            // Helper for image url extraction if it's object or string
+                            <img
+                              src={typeof businessData.image[0] === 'object' ? businessData.image[0].url : businessData.image[0]}
+                              alt={businessData.name}
+                              className="card-image"
+                            />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <i className="fa-solid fa-image" style={{ fontSize: '2rem', color: '#666', width: '16px' }}></i>
+                            </div>
+                          )}
+
+                          {/* Status Badge */}
+                          <div className={`status-badge ${app.status}`}>
+                            {app.status === 'approved' ? 'Approved' : (app.status === 'rejected' ? 'Rejected' : 'Pending Review')}
+                          </div>
+                        </div>
+
+                        {/* Content Section */}
+                        <div className="card-content">
+                          <h3 className="card-title">{businessData.name}</h3>
+
+                          <div className="card-header-row">
+                            <p className="card-category">
+                              <i className="fa-solid fa-tag" style={{ width: '16px' }}></i>
+                              {businessData.category || 'Uncategorized'}
+                            </p>
+
+                            {isLive && (
+                              <div className="card-rating">
+                                <i className="fa-solid fa-star" style={{ width: '16px' }}></i>
+                                <span>{businessData.rating?.average?.toFixed(1) || '0.0'}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="card-description">{businessData.description || 'No description provided.'}</p>
+
+                          {/* Rejection Notes */}
+                          {app.status === 'rejected' && app.reviewNotes && (
+                            <div className="rejection-notice">
+                              <strong>Admin Note:</strong> {app.reviewNotes}
+                            </div>
+                          )}
+
+                          <div className="card-meta">
+                            <div className="meta-item">
+                              <i className="fa-solid fa-location-dot" style={{ width: '16px' }}></i>
+                              <span>{typeof businessData.location === 'object' ? businessData.location.address || 'AAU Campus' : businessData.location}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="card-actions">
+                          <button
+                            className="action-btn edit-btn"
+                            onClick={() => setEditingItem(isEditingThis ? null : { id: displayId, type: cardType })}
+                          >
+                            <i className="fa-solid fa-pen-to-square" style={{ width: '16px' }}></i>
+                            {isEditingThis ? 'Close' : (app.status === 'rejected' ? 'Fix & Resubmit' : 'Update')}
+                          </button>
+
+                          {/* Only show delete for live businesses (as per logic derivation) */}
+                          {isLive && (
+                            <button
+                              className="action-btn delete-btn"
+                              onClick={() => handleDelete(displayId, businessData.name, cardType)}
+                            >
+                              <i className="fa-solid fa-trash" style={{ width: '16px' }}></i>
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+
+            {/* Edit Forms - Rendered Outside Grid */}
+            {applications.map(app => {
+              const isLive = app.status === 'approved';
+              const businessData = isLive && app.businessId ? app.businessId : app;
+              const displayId = isLive && app.businessId ? app.businessId._id : app._id;
+              const cardType = isLive ? 'business' : 'application';
+
+              if (editingItem && editingItem.id === displayId && editingItem.type === cardType) {
+                return (
+                  <div key={`edit-${displayId}`} className="edit-form-wrapper">
+                    <h3 style={{ marginBottom: '20px', color: 'var(--text-white)' }}>
+                      {isLive ? `Edit Business: ${businessData.name}` : `Update Application: ${businessData.name}`}
+                    </h3>
+                    <BusinessForm
+                      initialData={businessData}
+                      onSubmit={(data) => handleUpdateSubmit(displayId, data, cardType)}
+                      onCancel={() => setEditingItem(null)}
+                      isEditing={true}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })}
+          </section>
+        )}
       </main>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import Button from '../../components/Button/Button';
 import './Login.css';
 import { useAuth } from '../../contexts/authContext.jsx';
@@ -16,7 +17,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const location = useLocation();
-  
+
   // Logic to send users back to where they were trying to go (e.g., Delivery page)
   const from = location.state?.from?.pathname || '/';
 
@@ -28,7 +29,7 @@ const Login = () => {
     try {
       // login() here comes from AuthContext, which calls apiService
       await login(email, password);
-      navigate(from, { replace: true }); 
+      navigate(from, { replace: true });
     } catch (err) {
       //  IMPROVED: Use your centralized error handler to set the UI error
       handleApiError(err, setError);
@@ -138,8 +139,8 @@ const Login = () => {
                       className="password-toggle"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      <span className="material-symbols-outlined">
-                        {showPassword ? "visibility_off" : "visibility"} {/*todo */}
+                      <span className="password-icon">
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </span>
                     </button>
                   </div>

@@ -17,7 +17,7 @@ export const register = async (req, res) => {
 
     const role = "user";
     const { name, email, password, university, dormitory, yearOfStudy } = body;
-
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=606c38&color=fff&size=128`;
     if (!name || !email || !password) {
         throw new ApiError(400, "Please provide name, email and password");
     }
@@ -42,7 +42,8 @@ export const register = async (req, res) => {
             university,
             dormitory,
             yearOfStudy,
-            role
+            role, 
+            avatar: avatarUrl
         });
         logger.info("User created successfully", { userId: newUser._id });
 

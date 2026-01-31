@@ -56,11 +56,22 @@ export const businessService = {
     getById: async (id) => {
         return apiClient(`/api/businesses/detail/${id}`, { method: 'GET' });
     },
+
     search: async (query) => {
         return apiClient(`/api/businesses/search?query=${query}`, { method: 'GET' });
     },
 
-    // Admin only
+    // Get current user's business (single - legacy)
+    getMyBusiness: async () => {
+        return apiClient('/api/businesses/my-business', { method: 'GET' });
+    },
+
+    // Get all businesses owned by current user
+    getMyBusinesses: async () => {
+        return apiClient('/api/businesses/my-businesses', { method: 'GET' });
+    },
+
+    // Create business (JSON with Base64 image)
     create: async (data) => {
         return apiClient('/api/businesses', {
             method: 'POST',
@@ -68,6 +79,7 @@ export const businessService = {
         });
     },
 
+    // Update business (JSON with Base64 image)
     update: async (id, data) => {
         return apiClient(`/api/businesses/${id}`, {
             method: 'PUT',
@@ -85,6 +97,10 @@ export const businessService = {
 // ==========================================
 
 export const menuService = {
+    getById: async (id) => {
+        return apiClient(`/api/menu/item/${id}`, { method: 'GET' });
+    },
+
     getByBusinessId: async (businessId) => {
         return apiClient(`/api/menu/${businessId}`, { method: 'GET' });
     },
@@ -93,7 +109,7 @@ export const menuService = {
         return apiClient(`/api/menu/${businessId}/top`, { method: 'GET' });
     },
 
-    // Admin only
+    // Business owner only of its own menu of its business
     create: async (data) => {
         return apiClient('/api/menu', {
             method: 'POST',
@@ -196,6 +212,87 @@ export const chatService = {
         return apiClient('/api/chat', {
             method: 'POST',
             body: JSON.stringify({ message, history }),
+        });
+    },
+};
+
+
+// Applications service
+export const applicationService = {
+    // Submit new application
+    submit: async (data) => {
+        return apiClient('/api/applications', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Get my applications
+    getMyApplications: async () => {
+        return apiClient('/api/applications/my-applications', { method: 'GET' });
+    },
+
+    // Update application (status: pending/rejected)
+    update: async (id, data) => {
+        return apiClient(`/api/applications/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    }
+};
+
+// admin services 
+export const adminService = {
+    // Approve a business
+    approveBusiness: async (id) => {
+        return apiClient(`/api/businesses/${id}/approve`, {
+            method: 'PATCH',
+        });
+    },
+
+    // Make user an admin
+    makeAdmin: async (userId) => {
+        return apiClient('/api/admin/make-admin', {
+            method: 'POST',
+            body: JSON.stringify({ userId }),
+        });
+    },
+
+    //  Application Management (Admin) 
+
+    // List all applications (optional status filter: 'pending', 'approved', 'rejected')
+    listApplications: async (params) => {
+        let query = '';
+        if (typeof params === 'string') {
+            // Backward compatibility for when it was just (status)
+            query = params ? `?status=${params}` : '';
+        } else if (typeof params === 'object') {
+            query = '?' + new URLSearchParams(params).toString();
+        }
+        return apiClient(`/api/applications${query}`, { method: 'GET' });
+    },
+
+    // Approve application (creates business)
+    approveApplication: async (id, reviewNotes = '', businessData = {}) => {
+        return apiClient(`/api/applications/${id}/approve`, {
+            method: 'PUT',
+            body: JSON.stringify({ reviewNotes, businessData }),
+        });
+    },
+
+    // Reject application
+    rejectApplication: async (id, reviewNotes = '') => {
+        return apiClient(`/api/applications/${id}/reject`, {
+            method: 'PUT',
+            body: JSON.stringify({ reviewNotes }),
+        });
+    },
+
+    // Update application (e.g. undo status)
+    updateApplication: async (id, data) => {
+        return apiClient(`/api/applications/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
         });
     },
 };

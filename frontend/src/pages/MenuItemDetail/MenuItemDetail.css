@@ -19,11 +19,12 @@
 /* ===== Modal Container ===== */
 .menu-item-modal-container {
   width: 100%;
-  max-width: 800px;
-  min-height: 450px;
+  max-width: 850px; /* Slightly wider for better proportions */
+  max-height: 90vh; /* Prevents sticking to top/bottom */
   background-color: var(--primary-bg);
   border-radius: 20px;
   overflow: hidden;
+
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -58,8 +59,8 @@
 /* ===== Main Content Layout ===== */
 .menu-item-modal-content {
   display: flex;
-  height: 100%;
-  min-height: 450px;
+  flex: 1; 
+  overflow: hidden;
 }
 
 /* ===== Left Section (Image - 60%) ===== */
@@ -145,6 +146,34 @@
   overflow-y: auto;
 }
 
+/* Fix: Slimmer Review Prompt Box */
+.review-prompt-box {
+  margin-top: auto; /* Pushes to bottom */
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.03);
+  /* border-radius: 12px; */
+  /* border: 1px dashed var(--accent-green); */
+  text-align: center;
+}
+.review-prompt-box h3 {
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  color: var(--text-white);
+}
+.review-prompt-box p {
+  font-size: 0.7rem;
+  margin-bottom: 10px;
+  color: var(--text-grey);
+}
+/* Fix: Specific Button Sizing */
+.review-prompt-box .btn-primary {
+  padding: 8px 20px;
+  font-size: 0.8rem;
+  height: auto; /* Resets any global height */
+  min-height: unset;
+  width: auto;
+  display: inline-block;
+}
 /* Food Navigation */
 .modal-food-navigation {
   display: flex;
@@ -483,4 +512,168 @@
     padding: 10px 12px;
     font-size: 0.8rem;
   }
+}
+
+/* Update the container to ensure it has a strict height on desktop */
+.menu-item-modal-container {
+  width: 100%;
+  max-width: 850px;
+  height: 80vh; /* Fixed height relative to viewport */
+  min-height: 500px; /* Ensures it doesn't get too squashed */
+  background-color: var(--primary-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  display: flex; /* Added flex here */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure the content fills the container height */
+.menu-item-modal-content {
+  display: flex;
+  width: 100%;
+  height: 100%; /* Fill the container */
+}
+
+/* Fix Left Section Overlay */
+.modal-left-section {
+  flex: 1.5;
+  position: relative;
+  height: 100%;
+  background-color: #000;
+}
+
+.modal-large-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.modal-food-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10; /* Ensure it stays on top */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
+  padding: 25px 22px; /* Increased padding for better legibility */
+  color: var(--text-white);
+}
+
+/* Fix Right Section and Review Button */
+.modal-right-section {
+  flex: 1;
+  height: 100%;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column; /* Stacks children vertically */
+  background-color: var(--primary-bg);
+  overflow: hidden; /* Prevent the whole section from scrolling */
+}
+
+/* This allows the middle part (reviews) to scroll while the rest stays fixed */
+.modal-review-section {
+  flex: 1; /* Takes up all available middle space */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.modal-reviews-container {
+  flex: 1;
+  overflow-y: auto; /* This is the ONLY part that scrolls */
+  padding-right: 8px;
+}
+
+/* Prompt Box - Pinned to bottom */
+.review-prompt-box {
+  flex-shrink: 0; /* Prevents the box from squishing */
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  /* border-radius: 12px; */
+  /* border: 1px dashed var(--accent-green); */
+  text-align: center;
+  margin-top: auto;
+}
+
+/* 1. Ensure the right section is a rigid flex container */
+.modal-right-section {
+  flex: 1;
+  height: 100%; /* Important: Must match the container height */
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--primary-bg);
+  overflow: hidden; /* Prevent the whole right side from scrolling */
+}
+
+/* 2. The review section should grow to fill space, but hide what doesn't fit */
+.modal-review-section {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Critical fix for flexbox overflow issues */
+  margin-bottom: 10px;
+}
+
+/* 3. The actual container that holds the list of review cards */
+.modal-reviews-container {
+  overflow-y: auto; /* Only this part scrolls */
+  padding-right: 5px;
+  /* Ensure it doesn't collapse */
+  flex: 1;
+}
+
+/* 4. The prompt box: No overlap, stays at the bottom */
+.review-prompt-box {
+  flex-shrink: 0; /* Prevents it from being squashed */
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  /* border-radius: 12px; */
+  /* border: 1px dashed var(--accent-green); */
+  text-align: center;
+  margin-top: 10px; /* Space between reviews and the box */
+  z-index: 5;
+}
+
+/* 5. Make the button smaller to save space */
+.review-prompt-box h3 {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+}
+.review-prompt-box p {
+  font-size: 0.65rem;
+  margin-bottom: 8px;
+}
+.review-prompt-box .btn-primary {
+  padding: 6px 15px;
+  font-size: 0.75rem;
+}
+
+/* Center the loading state perfectly */
+.modal-loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%; /* Take up the full overlay space */
+  color: var(--text-white);
+  gap: 15px;
+}
+
+/* Ensure the spinner looks right */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-left-color: var(--accent-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

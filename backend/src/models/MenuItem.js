@@ -29,9 +29,13 @@ const menuItemSchema = new mongoose.Schema(
     category: {
       type: String, //main, breakfast, fasting...
     },
-    image: {
-      type: String,
-    },
+    images: [
+      {
+        url: { type: String, required: true },
+        alt: { type: String },
+        isPrimary: { type: Boolean, default: false },
+      },
+    ],
 
     rating: {
       average: {
@@ -55,7 +59,7 @@ const menuItemSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 menuItemSchema.index({ business: 1, category: 1 });
