@@ -1,5 +1,7 @@
-import { BACKEND_URL } from './client';
+// import { BACKEND_URL } from './client';
 
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 /**
  * Sends a message to the AI assistant
  * @param {string} userMessage - The message text from the user
