@@ -2,12 +2,7 @@
 
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-/**
- * Sends a message to the AI assistant
- * @param {string} userMessage - The message text from the user
- * @param {Array} history - Array of previous messages for context (optional)
- * @returns {Promise<Object>} - The response from the AI
- */
+// Sends a message to the AI assistant
 export const sendMessage = async (userMessage, history = []) => {
     try {
         const response = await fetch(`${BACKEND_URL}/api/chat`, {
